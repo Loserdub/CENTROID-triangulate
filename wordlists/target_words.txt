@@ -1,0 +1,17 @@
+# CENTROID Target Words: AI & Generative Music Domain
+generative
+synthesis
+composition
+neural
+algorithm
+vocaloid
+sound
+melody
+harmony
+copyright
+dataset
+prompt
+audio
+synthesizer
+centroid
+clustering

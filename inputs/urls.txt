@@ -1,0 +1,6 @@
+# CENTROID Corpus Sources: AI Music News & Generative Audio (5 Target Pages)
+https://en.wikipedia.org/wiki/Music_and_artificial_intelligence
+https://en.wikipedia.org/wiki/Suno_AI
+https://en.wikipedia.org/wiki/Udio
+https://en.wikipedia.org/wiki/Generative_music
+https://en.wikipedia.org/wiki/Algorithmic_composition

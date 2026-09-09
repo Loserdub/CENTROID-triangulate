@@ -1,0 +1,50 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# Caches and test coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment and secret files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Build & distribution
+dist/
+build/
+*.egg-info/
+
+# Temporary and editor files
+*.tmp
+*.bak
+*.swp
+*~
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test backup artifacts
+centroid_backup_*
+
+# Pipeline Generated Outputs
+# Preserving outputs/dashboard_template.html and outputs/.gitkeep
+outputs/*
+!outputs/dashboard_template.html
+!outputs/.gitkeep

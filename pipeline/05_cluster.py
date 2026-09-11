@@ -355,11 +355,13 @@ def cluster_words(
         c_total = cluster_totals[cid]
         pct_share = round((c_total / total_top_words_count * 100), 2) if total_top_words_count > 0 else 0.0
 
+        centroid_vec = kmeans.cluster_centers_[cid].tolist() if hasattr(kmeans, "cluster_centers_") else []
         clusters_output[str(cid)] = {
             "label": cluster_anchor_labels[cid],
             "words": member_words,
             "total_count": c_total,
-            "pct_share": pct_share
+            "pct_share": pct_share,
+            "centroid_vector": centroid_vec
         }
 
     return top_words, clusters_output
@@ -513,9 +515,16 @@ def main():
         help="Random seed for reproducible Word2Vec and KMeans (default: 42)."
     )
 
+    parser.add_argument(
+        "--snapshot",
+        type=str,
+        default=None,
+        help="Optional snapshot identifier to archive results in outputs/snapshots/<snapshot>/."
+    )
+
     args = parser.parse_args()
     try:
-        run_clustering_pipeline(
+        results = run_clustering_pipeline(
             top_n=args.top,
             n_clusters=args.clusters,
             raw_csv_path=args.raw_csv,
@@ -524,6 +533,35 @@ def main():
             output_clusters_path=args.output_clusters,
             seed=args.seed
         )
+        if args.snapshot:
+            import shutil, time
+            snapshot_dir = BASE_DIR / "outputs" / "snapshots" / args.snapshot
+            snapshot_dir.mkdir(parents=True, exist_ok=True)
+            if args.output_ranked.exists():
+                shutil.copy2(args.output_ranked, snapshot_dir / "word_freq_ranked.csv")
+            if args.output_clusters.exists():
+                shutil.copy2(args.output_clusters, snapshot_dir / "clusters.json")
+            if args.raw_csv.exists():
+                shutil.copy2(args.raw_csv, snapshot_dir / "word_freq_raw.csv")
+            if args.corpus.exists():
+                shutil.copy2(args.corpus, snapshot_dir / "corpus.txt")
+            timeline_path = BASE_DIR / "outputs" / "timeline_index.json"
+            t_data = []
+            if timeline_path.exists():
+                try:
+                    with open(timeline_path, "r", encoding="utf-8") as tf:
+                        t_data = json.load(tf)
+                except Exception:
+                    t_data = []
+            t_data = [item for item in t_data if item.get("id") != args.snapshot]
+            t_data.append({
+                "id": args.snapshot,
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "label": args.snapshot
+            })
+            with open(timeline_path, "w", encoding="utf-8") as tf:
+                json.dump(t_data, tf, indent=2)
+            logger.info(f"Saved snapshot '{args.snapshot}' to '{snapshot_dir}'")
         sys.exit(0)
     except Exception as e:
         logger.error(f"Clustering execution failed: {e}", exc_info=True)

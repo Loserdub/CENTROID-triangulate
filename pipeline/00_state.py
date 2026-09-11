@@ -126,6 +126,17 @@ STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
         ],
         "outputs": ["outputs/dashboard.html"],
         "aliases": ["07", "07_dashboard", "dashboard", "html_dashboard", "viz"]
+    },
+    "08_drift": {
+        "script": "08_drift.py",
+        "display_name": "Stage 08 (Semantic Drift Tracking)",
+        "inputs": [
+            "outputs/clusters.json",
+            "outputs/timeline_index.json",
+            "pipeline/08_drift.py"
+        ],
+        "outputs": ["outputs/drift_analysis.json"],
+        "aliases": ["08", "08_drift", "drift", "procrustes", "trajectory", "forecast"]
     }
 }
 

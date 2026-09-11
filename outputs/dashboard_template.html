@@ -108,7 +108,7 @@
          Secondary Text:        #8B9199
          Hairline Dividers:     #2A323D
          Accent Brass:          #C98A3E (Active cluster & anchor callouts)
-         Secondary Data Accent: #5FA8A0 (Muted teal for vectors, cohesion, tags)
+         Secondary Data Accent: #D1D7E0 (Crisp Platinum Silver for vectors, cohesion, tags)
          Muted Graphite:        #3C4856
        Geometry:
          0px Border Radius, Flat Planar Surfaces, No Drop Shadows
@@ -127,8 +127,8 @@
       --hairline: #2A323D;
       --accent-brass: #C98A3E;
       --accent-brass-dim: rgba(201, 138, 62, 0.14);
-      --accent-data: #5FA8A0;
-      --accent-data-dim: rgba(95, 168, 160, 0.12);
+      --accent-data: #D1D7E0;
+      --accent-data-dim: rgba(209, 215, 224, 0.12);
       --muted-graphite: #3C4856;
       
       --font-display: 'Fraunces', Georgia, serif;
@@ -413,7 +413,7 @@
       font-size: 9px;
       font-weight: 700;
       color: var(--accent-data);
-      background: rgba(95, 168, 160, 0.1);
+      background: rgba(209, 215, 224, 0.1);
       border: 1px solid rgba(95, 168, 160, 0.3);
       padding: 1px 5px;
     }
@@ -449,103 +449,150 @@
       margin-bottom: 8px;
     }
 
-    .centroid-quick-input {
-      flex: 1;
+    .centroid-urls-textarea {
+      width: 100%;
+      height: 140px;
       background-color: #101418;
       border: 1px solid var(--hairline);
       color: var(--text-primary);
       font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 6px 10px;
+      font-size: 11.5px;
+      line-height: 1.6;
+      padding: 10px 12px;
       outline: none;
+      resize: vertical;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
 
-    .centroid-quick-input:focus {
+    .centroid-urls-textarea:focus {
       border-color: var(--accent-brass);
       background-color: #14181E;
     }
 
-    .btn-quick-add {
-      background-color: var(--accent-brass);
-      color: #14181C;
-      border: 1px solid var(--accent-brass);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      padding: 6px 14px;
-      cursor: pointer;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .btn-quick-add:hover {
-      background-color: #DE9B4A;
-      color: #000;
-    }
-
-    /* 10 URL Input Slots */
-    .url-slots-container {
+    /* 2D Map Legend Bar */
+    .map-legend-bar {
       display: flex;
-      flex-direction: column;
-      gap: 4px;
-      max-height: 200px;
-      overflow-y: auto;
-      padding-right: 4px;
+      align-items: center;
+      gap: 18px;
+      padding: 8px 16px;
       background: #14181C;
-      border: 1px solid var(--hairline);
-      padding: 6px;
+      border-top: 1px solid var(--hairline);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      flex-wrap: wrap;
     }
 
-    .url-slot-row {
+    .legend-item {
       display: flex;
       align-items: center;
       gap: 6px;
-    }
-
-    .btn-slot-delete {
-      background: transparent;
-      border: 1px solid #262F3B;
       color: var(--text-secondary);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      line-height: 1;
-      padding: 3px 6px;
-      cursor: pointer;
     }
 
-    .btn-slot-delete:hover {
-      border-color: #E06C75;
-      color: #E06C75;
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      display: inline-block;
     }
 
-    .url-idx-badge {
-      font-family: var(--font-mono);
-      font-size: 9.5px;
+    .legend-dot.brass {
+      background: var(--accent-brass);
+    }
+
+    .legend-dot.silver {
+      background: var(--accent-data);
+    }
+
+    .legend-axis {
       font-weight: 700;
-      color: var(--accent-brass);
-      background: #1C2128;
-      border: 1px solid var(--hairline);
-      padding: 3px 5px;
-      min-width: 26px;
-      text-align: center;
-      line-height: 1;
+      color: var(--text-primary);
     }
 
-    .url-slot-input {
+    .legend-desc {
+      color: var(--text-secondary);
+    }
+
+    .legend-hint {
+      margin-left: auto;
+      color: var(--accent-brass);
+      font-size: 10px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Ranked Ledger Controls Bar */
+    .ledger-controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 16px;
+      background: #14181C;
+      border-bottom: 1px solid var(--hairline);
+      flex-wrap: wrap;
+    }
+
+    .ledger-search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       flex: 1;
-      background-color: #101418;
-      border: 1px solid #262F3B;
+      min-width: 260px;
+      background: #101418;
+      border: 1px solid var(--hairline);
+      padding: 6px 10px;
+    }
+
+    .ledger-search-box:focus-within {
+      border-color: var(--accent-brass);
+    }
+
+    .ledger-search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
       color: var(--text-primary);
       font-family: var(--font-mono);
       font-size: 11px;
-      padding: 4px 8px;
-      outline: none;
     }
 
-    .url-slot-input:focus {
+    .ledger-filter-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .filter-indicator-tag {
+      background: rgba(201, 138, 62, 0.12);
+      border: 1px solid var(--accent-brass);
+      color: var(--accent-brass);
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-clear-table-filter {
+      background: transparent;
+      border: 1px solid #3C4856;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 8px;
+      cursor: pointer;
+    }
+
+    .btn-clear-table-filter:hover {
       border-color: var(--accent-brass);
-      background-color: #14181E;
+      color: var(--text-primary);
+    }
+
+    .filtered-rows-counter {
+      color: var(--text-secondary);
+      font-size: 11px;
     }
 
     .bay-actions {
@@ -755,6 +802,123 @@
     }
 
     /* Segmented Toggle Group: GENERAL vs DIRECTED */
+        .mode-toggle-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .mode-hover-card {
+      position: absolute;
+      top: calc(100% + 8px);
+      width: 300px;
+      background-color: #11151C;
+      border: 1px solid var(--hairline);
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--text-secondary);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.15);
+      z-index: 1200;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px);
+      transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+      text-align: left;
+    }
+
+    .mode-hover-general {
+      right: -100px;
+      border-top: 2px solid #8B949E;
+    }
+
+    .mode-hover-directed {
+      right: 0;
+      border-top: 2px solid var(--accent-brass);
+    }
+
+    .mode-toggle-wrapper:hover .mode-hover-card,
+    .mode-toggle-wrapper:focus-within .mode-hover-card {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .mode-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .mode-card-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge-general {
+      color: #E2E8F0;
+    }
+
+    .badge-directed {
+      color: var(--accent-brass);
+    }
+
+    .mode-card-status {
+      font-size: 9px;
+      color: var(--text-secondary);
+      border: 1px solid var(--hairline);
+      padding: 1px 5px;
+      letter-spacing: 0.06em;
+    }
+
+    .mode-card-title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .mode-card-desc {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
+
+    .mode-card-bullets {
+      margin: 0 0 10px 0;
+      padding-left: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 10.5px;
+    }
+
+    .mode-card-bullets li strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .mode-card-footer {
+      border-top: 1px solid var(--hairline);
+      padding-top: 8px;
+      font-size: 10px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    .mode-card-best {
+      color: var(--accent-brass);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
     .mode-toggle-group {
       display: inline-flex;
       background: #11151A;
@@ -786,9 +950,9 @@
     }
 
     .mode-toggle-btn.active[data-mode="general"] {
-      background: #1A222B;
-      color: var(--accent-data);
-      border-color: var(--accent-data);
+      background: #1C222B;
+      color: #F1F5F9;
+      border-color: #64748B;
       font-weight: 700;
     }
 
@@ -810,7 +974,7 @@
     .mode-explanation-banner {
       background: #12161C;
       border: 1px solid var(--hairline);
-      border-left: 3px solid var(--accent-data);
+      border-left: 3px solid #64748B;
       padding: 6px 10px;
       font-family: var(--font-mono);
       font-size: 10px;
@@ -828,7 +992,7 @@
     }
 
     .mode-explanation-banner .mode-bullet {
-      color: var(--accent-data);
+      color: #94A3B8;
       font-weight: 700;
     }
 
@@ -878,7 +1042,7 @@
       font-weight: 600;
       letter-spacing: 0.08em;
       padding: 1px 5px;
-      background: rgba(95, 168, 160, 0.12);
+      background: rgba(209, 215, 224, 0.12);
       border: 1px solid var(--accent-data);
       color: var(--accent-data);
       text-transform: uppercase;
@@ -2021,7 +2185,7 @@
       font-size: 10px;
       font-weight: 700;
       color: var(--accent-data);
-      background: rgba(95, 168, 160, 0.1);
+      background: rgba(209, 215, 224, 0.1);
       border: 1px solid rgba(95, 168, 160, 0.35);
       padding: 3px 8px;
       display: inline-flex;
@@ -2032,7 +2196,7 @@
     }
 
     .verification-badge .pip-online {
-      color: #5FA8A0;
+      color: var(--accent-data);
       font-size: 8px;
     }
 
@@ -2074,7 +2238,7 @@
       font-size: 9px;
       font-weight: 700;
       color: var(--accent-data);
-      background: rgba(95, 168, 160, 0.1);
+      background: rgba(209, 215, 224, 0.1);
       border: 1px solid rgba(95, 168, 160, 0.3);
       padding: 1px 5px;
     }
@@ -2227,7 +2391,7 @@
     }
 
     .geo-spec-val.highlight-brass { color: var(--accent-brass); }
-    .geo-spec-val.highlight-teal { color: var(--accent-data); }
+    .geo-spec-val.highlight-silver { color: var(--accent-data); }
 
     /* Density Hero Readout */
     .density-hero-display {
@@ -2441,7 +2605,7 @@
     .entity-chip .ent-count {
       font-size: 9.5px;
       color: var(--accent-data);
-      background: rgba(95, 168, 160, 0.12);
+      background: rgba(209, 215, 224, 0.12);
       padding: 1px 4px;
     }
 
@@ -2971,6 +3135,436 @@
       }
     }
 
+  
+    /* =========================================================
+       TOPOLOGICAL SEMANTIC DRIFT & PREDICTIVE FORECAST STYLES
+       ========================================================= */
+
+    /* Timeline Scrubber Toolbar */
+    .drift-timeline-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 10px 18px;
+      background-color: #12161B;
+      border-bottom: 1px solid var(--hairline);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .timeline-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .timeline-label {
+      color: var(--accent-brass);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+
+    .epoch-btn-group {
+      display: inline-flex;
+      border: 1px solid var(--hairline);
+      background-color: #0E1115;
+    }
+
+    .epoch-btn {
+      background: transparent;
+      border: none;
+      border-right: 1px solid var(--hairline);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 5px 12px;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      transition: all 0.15s ease;
+    }
+
+    .epoch-btn:last-child {
+      border-right: none;
+    }
+
+    .epoch-btn:hover {
+      color: var(--text-primary);
+      background-color: #1A2028;
+    }
+
+    .epoch-btn.active {
+      background-color: var(--accent-brass);
+      color: #0E1115;
+      font-weight: 700;
+    }
+
+    .epoch-btn.forecast-btn.active {
+      background-color: #F39C12;
+      color: #0E1115;
+      box-shadow: 0 0 12px rgba(243, 156, 18, 0.4);
+    }
+
+    .btn-play-drift {
+      background-color: #161C23;
+      border: 1px solid var(--hairline);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 5px 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-play-drift:hover {
+      border-color: var(--accent-brass);
+      color: var(--accent-brass);
+    }
+
+    .btn-play-drift.is-playing {
+      background-color: rgba(201, 138, 62, 0.15);
+      border-color: var(--accent-brass);
+      color: var(--accent-brass);
+      animation: driftPulseBorder 1.5s infinite;
+    }
+
+    @keyframes driftPulseBorder {
+      0%, 100% { border-color: var(--accent-brass); box-shadow: 0 0 4px rgba(201, 138, 62, 0.3); }
+      50% { border-color: #F39C12; box-shadow: 0 0 10px rgba(243, 156, 18, 0.6); }
+    }
+
+    .timeline-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .trajectory-toggle-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+      font-size: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .trajectory-toggle-label input {
+      accent-color: var(--accent-brass);
+      cursor: pointer;
+    }
+
+    .drift-telemetry-pill {
+      background-color: #161B22;
+      border: 1px solid var(--hairline);
+      color: var(--accent-brass);
+      padding: 3px 8px;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+    }
+
+    /* SVG Trajectory Styles */
+    .drift-trajectory-path {
+      fill: none;
+      stroke: rgba(201, 138, 62, 0.4);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.2s, stroke-width 0.2s;
+    }
+
+    .drift-trajectory-path.active-cluster-traj {
+      stroke: #F39C12;
+      stroke-width: 2.5;
+      filter: drop-shadow(0 0 4px rgba(243, 156, 18, 0.6));
+    }
+
+    .drift-forecast-path {
+      fill: none;
+      stroke: #E5A93C;
+      stroke-width: 1.5;
+      stroke-dasharray: 4, 3;
+      stroke-linecap: round;
+      transition: stroke 0.2s, stroke-width 0.2s;
+    }
+
+    .drift-forecast-path.active-cluster-traj {
+      stroke: #FFEAA7;
+      stroke-width: 2.2;
+      filter: drop-shadow(0 0 5px rgba(243, 156, 18, 0.8));
+    }
+
+    .drift-origin-circle {
+      fill: #485160;
+      stroke: #14181D;
+      stroke-width: 1.5;
+      transition: all 0.2s ease;
+    }
+
+    .drift-forecast-circle {
+      fill: #F39C12;
+      stroke: #FFF;
+      stroke-width: 1.5;
+      transition: all 0.2s ease;
+    }
+
+    .drift-epoch-tag {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      font-weight: 600;
+      fill: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .drift-forecast-beacon {
+      fill: none;
+      stroke: #F39C12;
+      stroke-width: 1;
+      opacity: 0.8;
+      animation: beaconPulse 2s infinite ease-out;
+    }
+
+    @keyframes beaconPulse {
+      0% { r: 5; opacity: 0.9; }
+      100% { r: 16; opacity: 0; }
+    }
+
+    .cluster-point {
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Section 2: Breakout Radar Section */
+    .drift-radar-section {
+      margin-bottom: 24px;
+      background-color: var(--panel-bg);
+      border: 1px solid var(--hairline);
+    }
+
+    .drift-metric-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background-color: var(--hairline);
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    @media (max-width: 1024px) {
+      .drift-metric-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .drift-metric-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .drift-metric-card {
+      background-color: #14181D;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .drift-metric-kicker {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-secondary);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .drift-metric-val {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .drift-metric-val .unit {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .drift-metric-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .drift-bento-stage {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 1px;
+      background-color: var(--hairline);
+    }
+
+    @media (max-width: 1080px) {
+      .drift-bento-stage {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .drift-bento-card {
+      background-color: #14181D;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .drift-bento-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .drift-bento-title {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 2px 0 0 0;
+      letter-spacing: -0.01em;
+    }
+
+    .drift-bento-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .breakout-chips-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .breakout-chip-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 10px 14px;
+      background-color: #0F1318;
+      border: 1px solid var(--hairline);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .breakout-chip-item:hover {
+      border-color: var(--accent-brass);
+      background-color: #171D24;
+      transform: translateX(3px);
+    }
+
+    .breakout-term-group {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .breakout-term-name {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-brass);
+    }
+
+    .breakout-cluster-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .breakout-badge-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .breakout-vel-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: #2ECC71;
+      background-color: rgba(46, 204, 113, 0.1);
+      border: 1px solid rgba(46, 204, 113, 0.25);
+      padding: 2px 7px;
+    }
+
+    .breakout-tier-badge {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      color: #F39C12;
+      background-color: rgba(243, 156, 18, 0.1);
+      border: 1px solid rgba(243, 156, 18, 0.3);
+      padding: 2px 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .kinematics-table-wrapper {
+      overflow-x: auto;
+    }
+
+    .kinematics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .kinematics-table th {
+      text-align: left;
+      padding: 8px 10px;
+      background-color: #0E1216;
+      border-bottom: 1px solid var(--hairline);
+      color: var(--text-secondary);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+    }
+
+    .kinematics-table td {
+      padding: 9px 10px;
+      border-bottom: 1px solid rgba(46, 55, 68, 0.3);
+      color: var(--text-primary);
+    }
+
+    .kinematics-table tr:hover td {
+      background-color: rgba(201, 138, 62, 0.05);
+    }
+
+    .kinematics-btn-focus {
+      background: transparent;
+      border: 1px solid var(--hairline);
+      color: var(--accent-brass);
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .kinematics-btn-focus:hover {
+      background-color: var(--accent-brass);
+      color: #0E1115;
+    }
+
   </style>
 </head>
 <body>
@@ -3025,29 +3619,21 @@
       <div class="workbench-body" id="workbench-body">
         <div class="workbench-grid">
           
-          <!-- Bay 01: Up to 10 Source URLs -->
+          <!-- Bay 01: Source URLs (Comma Separated) -->
           <div class="workbench-bay bay-urls">
             <div class="bay-head">
               <div class="bay-title-wrap">
                 <span class="bay-tag">BAY 01</span>
-                <span class="bay-label">Source URLs (Up to 10)</span>
+                <span class="bay-label">Source URLs (Comma Separated)</span>
               </div>
-              <span class="slot-counter" id="url-slot-counter">10/10 SLOTS</span>
+              <span class="slot-counter" id="url-slot-counter">0 URLS LOADED</span>
             </div>
-            <p class="bay-hint">Google Trends, Wikipedia, or web articles to scrape &amp; tokenize:</p>
+            <p class="bay-hint">Enter as many URLs as you choose, separated by commas or line breaks:</p>
             
-            <!-- URL Quick Entry Box -->
-            <div class="url-quick-entry-row">
-              <input type="url" id="input-quick-url" class="centroid-quick-input" placeholder="Paste article or Trends URL (https://...) and press Enter" aria-label="URL entry text box">
-              <button type="button" class="btn-quick-add" id="btn-add-quick-url">+ ADD URL</button>
-            </div>
-
-            <div class="url-slots-container" id="url-slots-container">
-              <!-- 10 distinct editable URL slots -->
-            </div>
+            <textarea id="source-urls-input" class="centroid-urls-textarea" rows="6" placeholder="https://en.wikipedia.org/wiki/Artificial_intelligence, https://en.wikipedia.org/wiki/Machine_learning, https://..."></textarea>
 
             <div class="bay-actions">
-              <button type="button" class="btn-micro" id="btn-load-trends-urls">Load 10 Trends URLs</button>
+              <button type="button" class="btn-micro" id="btn-load-trends-urls">Load Sample URLs</button>
               <button type="button" class="btn-micro" id="btn-clear-urls">Clear</button>
             </div>
           </div>
@@ -3104,16 +3690,55 @@
                 <span class="target-mode-pill" id="target-mode-pill">GENERAL</span>
               </div>
               
-              <!-- Segmented Toggle: GENERAL vs DIRECTED -->
+              <!-- Segmented Toggle: GENERAL vs DIRECTED with Rich Hover Explainers -->
               <div class="mode-toggle-group" role="radiogroup" aria-label="Target Words Analysis Mode">
-                <button type="button" class="mode-toggle-btn active" id="btn-mode-general" data-mode="general" role="radio" aria-checked="true" title="Unbiased general corpus exploration">
-                  <span class="mode-radio-dot"></span>
-                  <span>GENERAL</span>
-                </button>
-                <button type="button" class="mode-toggle-btn" id="btn-mode-directed" data-mode="directed" role="radio" aria-checked="false" title="Clustering steered around target keywords">
-                  <span class="mode-radio-dot"></span>
-                  <span>DIRECTED</span>
-                </button>
+                <div class="mode-toggle-wrapper">
+                  <button type="button" class="mode-toggle-btn active" id="btn-mode-general" data-mode="general" role="radio" aria-checked="true" aria-haspopup="true">
+                    <span class="mode-radio-dot"></span>
+                    <span>GENERAL</span>
+                  </button>
+                  <div class="mode-hover-card mode-hover-general" role="tooltip">
+                    <div class="mode-card-header">
+                      <span class="mode-card-badge badge-general">MODE // GENERAL DISCOVERY</span>
+                      <span class="mode-card-status">UNBIASED</span>
+                    </div>
+                    <div class="mode-card-title">Unsupervised Natural Clustering</div>
+                    <div class="mode-card-desc">
+                      Discovers semantic structure organically from raw word co-occurrences without imposing preconceived anchors.
+                    </div>
+                    <ul class="mode-card-bullets">
+                      <li><strong>Centroid Anchors:</strong> Formed strictly from the highest-density natural vocabulary clusters in the corpus.</li>
+                      <li><strong>Target Words:</strong> Monitored passively for Gap Analysis (reveals which target terms are present vs missing).</li>
+                    </ul>
+                    <div class="mode-card-footer">
+                      <span class="mode-card-best">BEST FOR:</span> Impartial exploratory audits &amp; discovering latent themes you didn&apos;t know were there.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mode-toggle-wrapper">
+                  <button type="button" class="mode-toggle-btn" id="btn-mode-directed" data-mode="directed" role="radio" aria-checked="false" aria-haspopup="true">
+                    <span class="mode-radio-dot"></span>
+                    <span>DIRECTED</span>
+                  </button>
+                  <div class="mode-hover-card mode-hover-directed" role="tooltip">
+                    <div class="mode-card-header">
+                      <span class="mode-card-badge badge-directed">MODE // THEMATIC STEERING</span>
+                      <span class="mode-card-status">SUPERVISED</span>
+                    </div>
+                    <div class="mode-card-title">Target-Centric Taxonomy Steering</div>
+                    <div class="mode-card-desc">
+                      Forces semantic clusters to pin directly around your verified target keywords, pulling related terms into their orbit.
+                    </div>
+                    <ul class="mode-card-bullets">
+                      <li><strong>Centroid Anchors:</strong> Steered directly around seen target keywords present on the page.</li>
+                      <li><strong>Surrounding Words:</strong> Associated terms, synonyms, and subtopics gravitate to your target clusters.</li>
+                    </ul>
+                    <div class="mode-card-footer">
+                      <span class="mode-card-best">BEST FOR:</span> Tracking specific competitors, strategic initiatives, or domain-specific taxonomies.
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -3141,12 +3766,12 @@
               <span>SCAN CORPUS &amp; CLUSTER (RUN SCANNER)</span>
             </button>
             <button type="button" class="btn-sync-pipeline" id="btn-sync-pipeline" title="Save URLs to inputs/urls.txt">
-              <span>SYNC TO inputs/urls.txt</span>
+              <span>SAVE SOURCE LIST</span>
             </button>
           </div>
           <div class="run-bar-status" id="scan-status-message">
             <span class="status-indicator-dot"></span>
-            <span id="scan-status-text">Ready. Ingest up to 10 URLs or upload PDFs, configure exempt words, and run scanner.</span>
+            <span id="scan-status-text">Ready. Ingest URLs or upload files, configure exempt words, and run scanner.</span>
           </div>
         </div>
       </div>
@@ -3176,15 +3801,8 @@
       <div class="ba-breakdown-hero" id="ba-word-count-breakdown">
         <div class="ba-hero-header">
           <div class="ba-hero-title-group">
-            <span class="ba-hero-kicker">// IMMEDIATE BREAKDOWN · ZERO EXTRA CLICKS</span>
-            <h3 class="ba-hero-title">Raw vs. Cleaned Word Count</h3>
-          </div>
-          <div class="ba-exact-change-callout">
-            <span class="change-label">EXACT METRIC CHANGE:</span>
-            <span class="change-badge" id="ba-exact-metric-pill">
-              <strong id="ba-raw-summary">15,862</strong> words <span class="change-arrow">▼ down to</span> <strong id="ba-cleaned-summary">8,158</strong> words
-            </span>
-            <span class="change-delta-pill" id="ba-delta-pill">-7,704 words (-48.6%)</span>
+            <span class="ba-hero-kicker">// IMMEDIATE BREAKDOWN · SIGNAL TRANSITION</span>
+            <h3 class="ba-hero-title">Raw Volume vs. Cleaned Conceptual Signal</h3>
           </div>
         </div>
 
@@ -3250,17 +3868,7 @@
 
         </div>
 
-        <!-- Direct Explainer Banner -->
-        <div class="ba-narrative-banner">
-          <span class="ba-narrative-icon">⚡</span>
-          <span class="ba-narrative-text">
-            <strong>Exact Metric Change:</strong> Raw word count reduced from 
-            <span class="ba-mark" id="ba-text-raw">15,862 words</span> 
-            <span class="ba-arrow">▼ down to</span> 
-            <span class="ba-mark brass" id="ba-text-clean">8,158 words</span> 
-            (a net reduction of <span id="ba-text-delta">7,704</span> non-essential filler words, or <span id="ba-text-pct">48.6%</span> noise eliminated).
-          </span>
-        </div>
+
       </div>
 
       <div class="metrics-body-grid">
@@ -3284,7 +3892,7 @@
             <div class="time-readout-row">
               <div class="time-unit-cell">
                 <span class="time-sub">Raw Unfiltered</span>
-                <span class="time-val raw-time" id="readout-raw-time">14:25</span>
+                <span class="time-val raw-time" id="readout-raw-time">14m 25s</span>
               </div>
               <div class="time-arrow-cell">
                 <span class="time-arrow">➔</span>
@@ -3292,7 +3900,7 @@
               </div>
               <div class="time-unit-cell">
                 <span class="time-sub">Filtered Clean</span>
-                <span class="time-val clean-time" id="readout-clean-time">07:24</span>
+                <span class="time-val clean-time" id="readout-clean-time">07m 24s</span>
               </div>
             </div>
 
@@ -3306,7 +3914,7 @@
           <!-- Highlight Narrative Callout for Universal Understanding -->
           <div class="time-narrative-box" id="time-narrative-callout" style="background-color: #14181C; border-left: 2px solid #48B072; padding: 8px 10px; font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">
             <span style="color: #48B072; font-weight: 700;">EFFICIENCY DELTA:</span>
-            <span id="readout-delta-narrative" style="color: #E8E6E1;">Reading time reduced from <strong>14:25</strong> to <strong>07:24</strong> (saved <strong>7m 01s</strong>, a <strong>48.7%</strong> drop).</span>
+            <span id="readout-delta-narrative" style="color: #E8E6E1;">Reading time reduced from <strong>14m 25s</strong> to <strong>07m 24s</strong> (saved <strong>7m 01s</strong>, a <strong>48.7%</strong> drop).</span>
           </div>
 
           <!-- Generative Engine Optimization (GEO) Specs -->
@@ -3317,7 +3925,7 @@
             </div>
             <div class="geo-spec-item">
               <span class="geo-spec-label">SIGNAL DENSITY GAIN:</span>
-              <span class="geo-spec-val highlight-teal" id="geo-efficiency-gain">+48.7% Context Efficiency</span>
+              <span class="geo-spec-val highlight-silver" id="geo-efficiency-gain">+48.7% Context Efficiency</span>
             </div>
             <div class="geo-spec-item">
               <span class="geo-spec-label">PROCESSING BENCHMARK:</span>
@@ -3491,9 +4099,41 @@
           <div class="panel-meta">KMEANS // K=10 // 100-DIM W2V</div>
         </header>
 
+        
+        <!-- Temporal Semantic Drift Toolbar -->
+        <div class="drift-timeline-toolbar" id="drift-timeline-toolbar">
+          <div class="timeline-left">
+            <span class="timeline-label">// TEMPORAL SCRUBBER:</span>
+            <div class="epoch-btn-group" role="group" aria-label="Temporal Epoch Selection">
+              <button type="button" class="epoch-btn" id="btn-epoch-t0" data-epoch="T0" title="Historical baseline state prior to latest ingestion">T0 · BASELINE</button>
+              <button type="button" class="epoch-btn active" id="btn-epoch-t1" data-epoch="T1" title="Current state of analyzed corpus">T1 · ACTIVE</button>
+              <button type="button" class="epoch-btn forecast-btn" id="btn-epoch-t2" data-epoch="T+1" title="2nd-order vector extrapolation forecast">T+1 · PROJECTED FORECAST ✦</button>
+            </div>
+            <button type="button" class="btn-play-drift" id="btn-play-drift" title="Toggle animated playback of semantic trajectory orbit">▶ PLAY TRAJECTORY</button>
+          </div>
+          <div class="timeline-right">
+            <label class="trajectory-toggle-label">
+              <input type="checkbox" id="chk-show-drift" checked>
+              <span>SHOW DRIFT VECTORS</span>
+            </label>
+            <span class="drift-telemetry-pill" id="drift-summary-pill">SYS DRIFT: 0.084/ep · CONF: 89.9%</span>
+          </div>
+        </div>
+
         <div class="map-viewport" id="cluster-map">
           <!-- Plain SVG Dependency-Free Scatter Plot -->
           <svg id="cluster-map-svg" viewBox="0 0 800 480" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Cluster Nodes Scatter Map: X-axis Velocity, Y-axis Density">
+
+            <!-- SVG Arrowhead Defs for Drift Trajectories -->
+            <defs>
+              <marker id="drift-arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M 0 0 L 6 3 L 0 6 z" fill="#E5A93C" />
+              </marker>
+              <marker id="drift-arrowhead-active" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                <path d="M 0 0 L 7 3.5 L 0 7 z" fill="#F39C12" />
+              </marker>
+            </defs>
+
             
             <!-- Drafting Corner Registration Crosses -->
             <path d="M 24 30 H 36 M 30 24 V 36" class="map-corner-cross" />
@@ -3521,13 +4161,33 @@
             <line x1="70" y1="420" x2="740" y2="420" class="axis-line" />
             <line x1="70" y1="40" x2="70" y2="420" class="axis-line" />
 
-            <!-- Small Mono-Type Axis Labels -->
-            <text x="70" y="26" class="axis-label" text-anchor="start">density ↑</text>
-            <text x="740" y="412" class="axis-label" text-anchor="end">velocity →</text>
+            <!-- Small Mono-Type Axis Labels with Informational Hover Titles -->
+            <text x="70" y="26" class="axis-label" text-anchor="start">density ↑<title>Y-Axis Density: Semantic Cohesion &amp; Vector Compactness (Word2Vec Cosine Proximity)</title></text>
+            <text x="740" y="412" class="axis-label" text-anchor="end">velocity →<title>X-Axis Velocity: Token Co-occurrence Momentum &amp; Relative Document Frequency</title></text>
 
             <!-- Cluster Points Container -->
+            <!-- Drift Trajectory Paths & Forecast Vectors -->
+            <g id="drift-trajectories-group"></g>
+
             <g id="points-group"></g>
           </svg>
+        </div>
+
+        <!-- Map Axis Legend & Guidance Bar -->
+        <div class="map-legend-bar">
+          <div class="legend-item" title="Average cosine closeness of cluster member terms to centroid anchor">
+            <span class="legend-dot brass"></span>
+            <span class="legend-axis">DENSITY (Y):</span>
+            <span class="legend-desc">Semantic Cohesion (Word2Vec Cosine Proximity)</span>
+          </div>
+          <div class="legend-item" title="Relative document frequency and co-occurrence momentum">
+            <span class="legend-dot silver"></span>
+            <span class="legend-axis">VELOCITY (X):</span>
+            <span class="legend-desc">Co-occurrence Momentum (Cross-Corpus Frequency)</span>
+          </div>
+          <div class="legend-hint">
+            <span>💡 Click any cluster node to filter the 500-Word Ledger below</span>
+          </div>
         </div>
 
         <!-- Telemetry Strip -->
@@ -3680,6 +4340,95 @@
     <!-- =========================================================
          SECTION 3: RANKED VOCABULARY LEDGER & GAP ANALYSIS
          ========================================================= -->
+    
+    <!-- =========================================================
+         SECTION 2: TOPOLOGICAL DRIFT & PREDICTIVE TREND RADAR
+         ========================================================= -->
+    <section class="panel drift-radar-section" id="drift-radar-panel" aria-label="Topological Drift and Predictive Trend Radar">
+      <header class="panel-header">
+        <div class="panel-title-block">
+          <span class="panel-kicker">PREDICTIVE FORECASTING · SEC 02</span>
+          <h2 class="panel-title">
+            Topological Drift &amp; Predictive Trend Radar
+            <span class="panel-title-subtitle">[CROSS-TEMPORAL PROCRUSTES SVD · T+1 HORIZON]</span>
+          </h2>
+        </div>
+        <div class="panel-meta" id="drift-panel-meta">PROCRUSTES SVD // 100-DIM W2V // 2ND-ORDER KINEMATICS</div>
+      </header>
+
+      <!-- Metric Telemetry Strip -->
+      <div class="drift-metric-strip">
+        <div class="drift-metric-card">
+          <span class="drift-metric-kicker">OVERALL SYSTEM DRIFT RATE</span>
+          <div class="drift-metric-val highlight-brass" id="metric-drift-rate">0.084 <span class="unit">/ epoch</span></div>
+          <span class="drift-metric-sub">Mean Centroid Velocity Across Orthogonalized Manifold</span>
+        </div>
+        <div class="drift-metric-card">
+          <span class="drift-metric-kicker">FORECAST CONFIDENCE</span>
+          <div class="drift-metric-val highlight-data" id="metric-drift-confidence">89.9%</div>
+          <span class="drift-metric-sub">Procrustes Alignment Residual Variance Fit</span>
+        </div>
+        <div class="drift-metric-card">
+          <span class="drift-metric-kicker">MAX DYNAMIC CLUSTER</span>
+          <div class="drift-metric-val" id="metric-max-dynamic">K.02 // MUSIC</div>
+          <span class="drift-metric-sub">Highest Kinematic Momentum (v = 0.102, a = +0.046)</span>
+        </div>
+        <div class="drift-metric-card">
+          <span class="drift-metric-kicker">PROJECTION HORIZON</span>
+          <div class="drift-metric-val highlight-accent" id="metric-forecast-horizon">+1.0 Cycle</div>
+          <span class="drift-metric-sub">Second-Order Taylor Extrapolation (x + v·dt + ½a·dt²)</span>
+        </div>
+      </div>
+
+      <!-- Two-Column Radar Bento Stage -->
+      <div class="drift-bento-stage">
+        <!-- Left: Emergent Breakout Lexicon -->
+        <div class="drift-bento-card breakout-bento-card">
+          <div class="drift-bento-header">
+            <div>
+              <span class="bento-kicker">// EMERGENT RADAR</span>
+              <h3 class="drift-bento-title">Predicted Breakout Vocabulary</h3>
+            </div>
+            <span class="bento-count-pill" id="breakout-count-pill">3 SURGE SIGNALS</span>
+          </div>
+          <p class="drift-bento-desc">
+            Terms accelerating along inward gravitational trajectories toward cluster nuclei, predicted to become core thematic anchors in subsequent epochs:
+          </p>
+          <div class="breakout-chips-container" id="breakout-chips-grid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Right: Cluster Kinematics Matrix -->
+        <div class="drift-bento-card kinematics-bento-card">
+          <div class="drift-bento-header">
+            <div>
+              <span class="bento-kicker">// KINEMATIC MATRIX</span>
+              <h3 class="drift-bento-title">Cluster Displacement &amp; Heading Vectors</h3>
+            </div>
+            <span class="bento-count-pill">T0 → T1 → T+1</span>
+          </div>
+          <div class="kinematics-table-wrapper">
+            <table class="kinematics-table" aria-label="Cluster Kinematics Ledger">
+              <thead>
+                <tr>
+                  <th>CLUSTER</th>
+                  <th>VELOCITY (v)</th>
+                  <th>ACCEL (a)</th>
+                  <th>HEADING</th>
+                  <th>TRAJECTORY BEHAVIOR</th>
+                  <th>ACTION</th>
+                </tr>
+              </thead>
+              <tbody id="kinematics-table-body">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <details class="ledger-section" id="ranked-words-ledger">
       <summary class="ledger-summary-header" tabindex="0" role="button" aria-expanded="false" aria-controls="ranked-table-wrapper">
         <div class="ledger-title-wrap">
@@ -3691,6 +4440,19 @@
         </div>
         <span class="ledger-count-tag">[CLICK TO EXPAND // 500 ENTRIES READY]</span>
       </summary>
+
+      <!-- Interactive Table Filter & Search Controls Bar -->
+      <div class="ledger-controls-bar">
+        <div class="ledger-search-box">
+          <span class="search-icon">🔍</span>
+          <input type="search" id="table-search-input" class="ledger-search-input" placeholder="Search 500 ranked words by term, cluster anchor, or rank..." aria-label="Search ranked words table">
+        </div>
+        <div class="ledger-filter-status" id="ledger-filter-status">
+          <span class="filter-indicator-tag" id="ledger-filter-badge">ALL CLUSTERS</span>
+          <button type="button" class="btn-clear-table-filter" id="btn-reset-table-filter" style="display: none;">Show All Words</button>
+          <span class="filtered-rows-counter" id="ledger-rows-counter">Showing 500 of 500 words</span>
+        </div>
+      </div>
 
       <div class="table-container" id="ranked-table-wrapper">
         <table class="ranked-table" aria-label="Ranked Word Frequency Table">
@@ -8911,6 +9673,12 @@
       // Mutable active cluster dataset
       let currentClusters = [...CLUSTER_DATA];
 
+      // Temporal Semantic Drift Tracking State
+      let currentEpoch = "T1"; // "T0", "T1", "T+1"
+      let showDriftTrajectories = true;
+      let isPlayingDrift = false;
+      let driftPlayInterval = null;
+
       // Plot bounds
       const X_MIN_PLOT = 100;
       const X_MAX_PLOT = 700;
@@ -8986,8 +9754,9 @@
         sortedClusters.forEach(c => {
           const isActive = (c.id === activeClusterId);
           
-          const cx = mapValue(c.velocity, VEL_MIN, VEL_MAX, X_MIN_PLOT, X_MAX_PLOT);
-          const cy = mapValue(c.density, DENS_MIN, DENS_MAX, Y_MIN_PLOT, Y_MAX_PLOT);
+          const coords = getClusterCoordinates(c, currentEpoch);
+          const cx = mapValue(coords.x, VEL_MIN, VEL_MAX, X_MIN_PLOT, X_MAX_PLOT);
+          const cy = mapValue(coords.y, DENS_MIN, DENS_MAX, Y_MIN_PLOT, Y_MAX_PLOT);
           
           const baseR = getBaseRadius(c.strength);
           const currentR = isActive ? (baseR + 6) : baseR;
@@ -9034,6 +9803,16 @@
             l.setAttribute("class", "caliper-tick");
             g.appendChild(l);
           });
+
+          // 2b. Forecast Beacon (T+1 Pulsating Signal)
+          if (coords.isForecast) {
+            const beacon = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            beacon.setAttribute("cx", cx);
+            beacon.setAttribute("cy", cy);
+            beacon.setAttribute("r", currentR + 10);
+            beacon.setAttribute("class", "drift-forecast-beacon");
+            g.appendChild(beacon);
+          }
 
           // 3. Concentric Calibration Halo (Dashed Orbit)
           const calibRing = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -9102,6 +9881,9 @@
 
           group.appendChild(g);
         });
+
+        // Synchronize Drift Trajectories
+        renderDriftTrajectories();
       }
 
       // -------------------------------------------------------------
@@ -9132,9 +9914,10 @@
         if (el("readout-strength-bar")) el("readout-strength-bar").textContent = getUnicodeBar(c.strength);
         if (el("readout-share-pct")) el("readout-share-pct").textContent = `${c.pctShare}%`;
         if (el("readout-word-count")) el("readout-word-count").textContent = `${c.count.toLocaleString()} TOKENS (${c.pctShare}% SHARE)`;
-        if (el("readout-vel-val")) el("readout-vel-val").textContent = c.velocity.toFixed(3);
-        if (el("readout-dens-val")) el("readout-dens-val").textContent = c.density.toFixed(3);
-        if (el("readout-coordinates")) el("readout-coordinates").textContent = `${c.velocity.toFixed(3)} VEL × ${c.density.toFixed(3)} DENS`;
+        const coords = getClusterCoordinates(c, currentEpoch);
+        if (el("readout-vel-val")) el("readout-vel-val").textContent = coords.x.toFixed(3);
+        if (el("readout-dens-val")) el("readout-dens-val").textContent = coords.y.toFixed(3);
+        if (el("readout-coordinates")) el("readout-coordinates").textContent = `${coords.x.toFixed(3)} VEL × ${coords.y.toFixed(3)} DENS [${currentEpoch}]`;
         if (el("telemetry-active-cluster")) el("telemetry-active-cluster").textContent = `CLUSTER_${c.id} // "${c.label.toUpperCase()}"`;
 
         // Quadrant
@@ -9172,11 +9955,69 @@
         }
       }
 
+      // Table & Cluster Cross-Filtering State
+      let currentClusterFilter = null;
+      let currentTableSearchQuery = "";
+
+      function filterLedgerTable() {
+        const tbody = document.getElementById("ranked-table-body");
+        const counterEl = document.getElementById("ledger-rows-counter");
+        const badgeEl = document.getElementById("ledger-filter-badge");
+        const resetBtn = document.getElementById("btn-reset-table-filter");
+        if (!tbody) return;
+
+        const rows = tbody.querySelectorAll("tr");
+        let visibleCount = 0;
+        const q = (currentTableSearchQuery || "").trim().toLowerCase();
+
+        rows.forEach(row => {
+          const cells = row.querySelectorAll("td");
+          const word = (cells[1] ? cells[1].textContent : "").trim().toLowerCase();
+          const cid = (cells[5] ? cells[5].textContent : "").trim();
+          const anchor = (cells[6] ? cells[6].textContent : "").trim().toLowerCase();
+          const fullText = row.textContent.toLowerCase();
+
+          const matchesCluster = !currentClusterFilter || (cid === currentClusterFilter) || (anchor === currentClusterFilter.toLowerCase());
+          const matchesSearch = !q || fullText.includes(q);
+
+          if (matchesCluster && matchesSearch) {
+            row.style.display = "";
+            visibleCount++;
+          } else {
+            row.style.display = "none";
+          }
+        });
+
+        if (counterEl) {
+          counterEl.textContent = `Showing ${visibleCount} of ${rows.length} words`;
+        }
+
+        if (badgeEl) {
+          if (currentClusterFilter) {
+            const activeClust = (typeof CLUSTER_DATA !== "undefined" ? CLUSTER_DATA : []).find(c => c.id === currentClusterFilter);
+            const label = activeClust ? activeClust.label : `K.${currentClusterFilter}`;
+            badgeEl.textContent = `FILTER: K.${currentClusterFilter} ("${label}")`;
+            badgeEl.style.display = "inline-block";
+            if (resetBtn) resetBtn.style.display = "inline-block";
+          } else {
+            badgeEl.textContent = "ALL CLUSTERS";
+            if (resetBtn) resetBtn.style.display = "none";
+          }
+        }
+      }
+
       function selectCluster(clusterId) {
-        if (activeClusterId === clusterId) return;
+        if (activeClusterId === clusterId) {
+          // If already selected, also ensure filter is applied
+          currentClusterFilter = clusterId;
+          filterLedgerTable();
+          return;
+        }
         activeClusterId = clusterId;
         renderPoints();
         updateReadout(clusterId);
+        currentClusterFilter = clusterId;
+        filterLedgerTable();
       }
 
       function stepCluster(direction) {
@@ -9315,6 +10156,15 @@
         }
       }
 
+      function parseSourceUrls() {
+        const sourceUrlsInput = document.getElementById("source-urls-input");
+        if (!sourceUrlsInput) return [];
+        return sourceUrlsInput.value
+          .split(/[,\n\r]+/)
+          .map(u => u.trim())
+          .filter(u => u.length > 0 && !u.startsWith("#"));
+      }
+
       function setupWorkbench() {
         const slotsContainer = document.getElementById("url-slots-container");
         // Wire up Target Words Mode Toggle (General vs Directed)
@@ -9343,71 +10193,20 @@
 
         const exemptInput = document.getElementById("exempt-words-input");
         const slotCounter = document.getElementById("url-slot-counter");
-        const exemptBadge = document.getElementById("exempt-count-badge");
+        const sourceUrlsInput = document.getElementById("source-urls-input");
 
-        // Build 10 distinct URL input slots with individual delete buttons
-        if (slotsContainer) {
-          slotsContainer.innerHTML = "";
-          for (let i = 0; i < 10; i++) {
-            const row = document.createElement("div");
-            row.className = "url-slot-row";
-            const num = String(i + 1).padStart(2, "0");
-            const val = DEFAULT_10_URLS[i] || "";
-            row.innerHTML = `
-              <span class="url-idx-badge">${num}</span>
-              <input type="text" class="url-slot-input" id="url-slot-${i}" value="${val}" placeholder="https://..." aria-label="URL slot ${num}">
-              <button type="button" class="btn-slot-delete" title="Clear slot ${num}" data-idx="${i}">×</button>
-            `;
-            row.querySelector(".btn-slot-delete").addEventListener("click", () => {
-              const inp = document.getElementById(`url-slot-${i}`);
-              if (inp) inp.value = "";
-              updateSlotCount();
-            });
-            slotsContainer.appendChild(row);
-          }
+        function updateUrlCounter() {
+          if (!slotCounter) return;
+          const count = parseSourceUrls().length;
+          slotCounter.textContent = `${count} URL${count === 1 ? "" : "S"} LOADED`;
         }
 
-        // Quick URL Entry Box handler
-        const quickUrlInput = document.getElementById("input-quick-url");
-        const btnAddQuickUrl = document.getElementById("btn-add-quick-url");
-
-        function addQuickUrl() {
-          if (!quickUrlInput) return;
-          const url = quickUrlInput.value.trim();
-          if (!url) {
-            quickUrlInput.focus();
-            return;
+        if (sourceUrlsInput) {
+          if (typeof DEFAULT_10_URLS !== "undefined" && Array.isArray(DEFAULT_10_URLS) && DEFAULT_10_URLS.length > 0) {
+            sourceUrlsInput.value = DEFAULT_10_URLS.join(",\n");
           }
-          let targetInput = null;
-          for (let i = 0; i < 10; i++) {
-            const inp = document.getElementById(`url-slot-${i}`);
-            if (inp && !inp.value.trim()) {
-              targetInput = inp;
-              break;
-            }
-          }
-          if (!targetInput) {
-            targetInput = document.getElementById("url-slot-9");
-          }
-          if (targetInput) {
-            targetInput.value = url;
-            targetInput.focus();
-            quickUrlInput.value = "";
-            updateSlotCount();
-            targetInput.scrollIntoView({ behavior: "smooth", block: "nearest" });
-          }
-        }
-
-        if (btnAddQuickUrl) {
-          btnAddQuickUrl.addEventListener("click", addQuickUrl);
-        }
-        if (quickUrlInput) {
-          quickUrlInput.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              addQuickUrl();
-            }
-          });
+          sourceUrlsInput.addEventListener("input", updateUrlCounter);
+          updateUrlCounter();
         }
 
         // Initialize exempt words and target words
@@ -9416,19 +10215,6 @@
         }
         if (targetInput) {
           targetInput.value = DEFAULT_TARGET_WORDS.join(", ");
-        }
-
-        function updateSlotCount() {
-          if (!slotsContainer) return;
-          const inputs = slotsContainer.querySelectorAll(".url-slot-input");
-          let filled = 0;
-          inputs.forEach(inp => { if (inp.value.trim()) filled++; });
-          if (slotCounter) slotCounter.textContent = `${filled}/10 SLOTS`;
-        }
-
-        if (slotsContainer) {
-          slotsContainer.addEventListener("input", updateSlotCount);
-          updateSlotCount();
         }
 
         // File dropzone & PDF browse button
@@ -9516,24 +10302,18 @@
 
         // Quick action buttons
         const btnTrends = document.getElementById("btn-load-trends-urls");
-        if (btnTrends) {
+        if (btnTrends && sourceUrlsInput) {
           btnTrends.addEventListener("click", () => {
-            DEFAULT_10_URLS.forEach((url, i) => {
-              const input = document.getElementById(`url-slot-${i}`);
-              if (input) input.value = url;
-            });
-            updateSlotCount();
+            sourceUrlsInput.value = (typeof DEFAULT_10_URLS !== "undefined" ? DEFAULT_10_URLS : []).join(",\n");
+            updateUrlCounter();
           });
         }
 
         const btnClear = document.getElementById("btn-clear-urls");
-        if (btnClear) {
+        if (btnClear && sourceUrlsInput) {
           btnClear.addEventListener("click", () => {
-            for (let i = 0; i < 10; i++) {
-              const input = document.getElementById(`url-slot-${i}`);
-              if (input) input.value = "";
-            }
-            updateSlotCount();
+            sourceUrlsInput.value = "";
+            updateUrlCounter();
           });
         }
 
@@ -9557,18 +10337,38 @@
         const btnSync = document.getElementById("btn-sync-pipeline");
         if (btnSync) {
           btnSync.addEventListener("click", () => {
-            const urls = [];
-            for (let i = 0; i < 10; i++) {
-              const inp = document.getElementById(`url-slot-${i}`);
-              if (inp && inp.value.trim()) urls.push(inp.value.trim());
-            }
+            const urls = parseSourceUrls();
             const textContent = "# CENTROID Ingestion Sources\n" + urls.join("\n") + "\n";
             const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
             a.download = "urls.txt";
             a.click();
-            alert("CENTROID: urls.txt generated.\nSave to CENTROID/inputs/urls.txt and run 'python run.py --dashboard'.");
+            showCentroidToast(`Saved source list (${urls.length} URLs ready for inputs/urls.txt)`);
+          });
+        }
+
+        // Default workbench to collapsed if existing cluster data is present
+        if (wbBody && typeof CLUSTER_DATA !== "undefined" && Array.isArray(CLUSTER_DATA) && CLUSTER_DATA.length > 0) {
+          wbBody.style.display = "none";
+          if (wbToggleText) wbToggleText.textContent = "EXPAND CONSOLE [+]";
+        }
+
+        // Wire Table Search & Filter Controls
+        const searchInput = document.getElementById("table-search-input");
+        const btnResetFilter = document.getElementById("btn-reset-table-filter");
+        if (searchInput) {
+          searchInput.addEventListener("input", (e) => {
+            currentTableSearchQuery = e.target.value;
+            filterLedgerTable();
+          });
+        }
+        if (btnResetFilter) {
+          btnResetFilter.addEventListener("click", () => {
+            currentClusterFilter = null;
+            if (searchInput) searchInput.value = "";
+            currentTableSearchQuery = "";
+            filterLedgerTable();
           });
         }
 
@@ -9644,12 +10444,12 @@
         const rawTotalSec = Math.round((total / 220) * 60);
         const rawMin = Math.floor(rawTotalSec / 60);
         const rawSec = rawTotalSec % 60;
-        const rawTimeStr = `${String(rawMin).padStart(2, '0')}:${String(rawSec).padStart(2, '0')}`;
+        const rawTimeStr = `${rawMin}m ${String(rawSec).padStart(2, '0')}s`;
 
         const cleanTotalSec = Math.round((core / 220) * 60);
         const cleanMin = Math.floor(cleanTotalSec / 60);
         const cleanSec = cleanTotalSec % 60;
-        const cleanTimeStr = `${String(cleanMin).padStart(2, '0')}:${String(cleanSec).padStart(2, '0')}`;
+        const cleanTimeStr = `${cleanMin}m ${String(cleanSec).padStart(2, '0')}s`;
 
         const savedSec = Math.max(0, rawTotalSec - cleanTotalSec);
         const savedMin = Math.floor(savedSec / 60);
@@ -9842,14 +10642,11 @@
 
       function runWordScanner() {
         const statusEl = document.getElementById("scan-status-text");
-        if (statusEl) statusEl.textContent = "Scanning corpus documents... Applying exempt word filters...";
+        try {
+          if (statusEl) statusEl.textContent = "Scanning corpus documents... Applying exempt word filters...";
 
-        // 1. Gather URLs
-        const activeUrls = [];
-        for (let i = 0; i < 10; i++) {
-          const inp = document.getElementById(`url-slot-${i}`);
-          if (inp && inp.value.trim()) activeUrls.push(inp.value.trim());
-        }
+          // 1. Gather URLs
+          const activeUrls = parseSourceUrls();
 
         // 2. Parse Exempt Words List (Rule 4)
         const exemptInput = document.getElementById("exempt-words-input");
@@ -10153,7 +10950,13 @@
             statusEl.textContent = `✓ General scan complete: Unbiased clustering across ${documents.length} sources · Filtered ${exemptFilteredCount.toLocaleString()} exempt stopwords · Generated ${newClusters.length} natural centroid clusters.`;
           }
         }
+        showCentroidToast(`Scan complete: ${newClusters.length} clusters generated from ${documents.length} sources.`);
+      } catch (err) {
+        console.error("Word scanner error:", err);
+        if (statusEl) statusEl.textContent = `Scan error: ${err.message}. Check console or URL syntax.`;
+        showCentroidToast(`Scan error: ${err.message}`);
       }
+    }
 
       // Navigation listeners
       const btnPrev = document.getElementById("btn-prev-cluster");
@@ -10355,7 +11158,297 @@
         }
       }
 
+      
+      // =============================================================
+      // TOPOLOGICAL DRIFT TRACKING & PREDICTIVE FORECAST FUNCTIONS
+      // =============================================================
+
+      function getClusterCoordinates(c, epoch) {
+        if (window.DRIFT_DATA && window.DRIFT_DATA.trajectories) {
+          const traj = window.DRIFT_DATA.trajectories.find(t =>
+            t.cluster_id === c.id ||
+            t.label.toLowerCase() === c.label.toLowerCase() ||
+            t.anchor.toLowerCase() === c.centroid.toLowerCase()
+          );
+          if (traj) {
+            if (epoch === "T0" && traj.origin) {
+              return { x: traj.origin.x, y: traj.origin.y, isForecast: false, isOrigin: true, traj };
+            } else if (epoch === "T+1" && traj.projected) {
+              return { x: traj.projected.x, y: traj.projected.y, isForecast: true, isOrigin: false, traj };
+            } else if (traj.current) {
+              return { x: traj.current.x, y: traj.current.y, isForecast: false, isOrigin: false, traj };
+            }
+          }
+        }
+        return { x: c.velocity, y: c.density, isForecast: false, isOrigin: false, traj: null };
+      }
+
+      function renderDriftTrajectories() {
+        const group = document.getElementById("drift-trajectories-group");
+        if (!group) return;
+        group.innerHTML = "";
+
+        if (!showDriftTrajectories || !window.DRIFT_DATA || !window.DRIFT_DATA.trajectories || window.DRIFT_DATA.trajectories.length === 0) {
+          return;
+        }
+
+        window.DRIFT_DATA.trajectories.forEach(traj => {
+          const isActive = (traj.cluster_id === activeClusterId);
+
+          const x0 = mapValue(traj.origin.x, VEL_MIN, VEL_MAX, X_MIN_PLOT, X_MAX_PLOT);
+          const y0 = mapValue(traj.origin.y, DENS_MIN, DENS_MAX, Y_MIN_PLOT, Y_MAX_PLOT);
+
+          const x1 = mapValue(traj.current.x, VEL_MIN, VEL_MAX, X_MIN_PLOT, X_MAX_PLOT);
+          const y1 = mapValue(traj.current.y, DENS_MIN, DENS_MAX, Y_MIN_PLOT, Y_MAX_PLOT);
+
+          const x2 = mapValue(traj.projected.x, VEL_MIN, VEL_MAX, X_MIN_PLOT, X_MAX_PLOT);
+          const y2 = mapValue(traj.projected.y, DENS_MIN, DENS_MAX, Y_MIN_PLOT, Y_MAX_PLOT);
+
+          const trajG = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          trajG.setAttribute("class", `cluster-trajectory ${isActive ? "active-traj-group" : ""}`);
+          trajG.style.cursor = "pointer";
+          trajG.addEventListener("click", () => {
+            selectCluster(traj.cluster_id);
+          });
+
+          // 1. Arc T0 -> T1 (Historical Migration Comet Tail)
+          const midX = (x0 + x1) / 2;
+          const midY = (y0 + y1) / 2 - 8;
+          const pathT0T1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          pathT0T1.setAttribute("d", `M ${x0} ${y0} Q ${midX} ${midY} ${x1} ${y1}`);
+          pathT0T1.setAttribute("class", `drift-trajectory-path ${isActive ? "active-cluster-traj" : ""}`);
+          trajG.appendChild(pathT0T1);
+
+          // T0 Origin Circle & Label
+          const originCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          originCircle.setAttribute("cx", x0);
+          originCircle.setAttribute("cy", y0);
+          originCircle.setAttribute("r", isActive ? "4" : "3");
+          originCircle.setAttribute("class", "drift-origin-circle");
+          trajG.appendChild(originCircle);
+
+          const t0Label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          t0Label.setAttribute("x", x0 - 8);
+          t0Label.setAttribute("y", y0 + 3);
+          t0Label.setAttribute("text-anchor", "end");
+          t0Label.setAttribute("class", "drift-epoch-tag");
+          t0Label.textContent = "T0";
+          trajG.appendChild(t0Label);
+
+          // 2. Vector T1 -> T+1 (Projected Forecast Vector)
+          const pathT1T2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          pathT1T2.setAttribute("x1", x1);
+          pathT1T2.setAttribute("y1", y1);
+          pathT1T2.setAttribute("x2", x2);
+          pathT1T2.setAttribute("y2", y2);
+          pathT1T2.setAttribute("class", `drift-forecast-path ${isActive ? "active-cluster-traj" : ""}`);
+          pathT1T2.setAttribute("marker-end", isActive ? "url(#drift-arrowhead-active)" : "url(#drift-arrowhead)");
+          trajG.appendChild(pathT1T2);
+
+          // T+1 Destination Circle & Label
+          const forecastCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          forecastCircle.setAttribute("cx", x2);
+          forecastCircle.setAttribute("cy", y2);
+          forecastCircle.setAttribute("r", isActive ? "4.5" : "3.5");
+          forecastCircle.setAttribute("class", "drift-forecast-circle");
+          trajG.appendChild(forecastCircle);
+
+          const t2Label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          t2Label.setAttribute("x", x2 + 8);
+          t2Label.setAttribute("y", y2 + 3);
+          t2Label.setAttribute("text-anchor", "start");
+          t2Label.setAttribute("class", "drift-epoch-tag");
+          t2Label.setAttribute("fill", "#F39C12");
+          t2Label.textContent = "T+1";
+          trajG.appendChild(t2Label);
+
+          // Tooltip
+          const titleEl = document.createElementNS("http://www.w3.org/2000/svg", "title");
+          titleEl.textContent = `Cluster ${traj.cluster_id} [${traj.label}]: v=${traj.drift_velocity}, a=${traj.drift_acceleration}, heading=${traj.heading_angle}° (${traj.heading_desc})`;
+          trajG.appendChild(titleEl);
+
+          group.appendChild(trajG);
+        });
+      }
+
+      function setEpoch(epoch) {
+        currentEpoch = epoch;
+        const btnMap = {
+          "T0": "btn-epoch-t0",
+          "T1": "btn-epoch-t1",
+          "T+1": "btn-epoch-t2"
+        };
+        Object.entries(btnMap).forEach(([ep, btnId]) => {
+          const btn = document.getElementById(btnId);
+          if (btn) {
+            if (ep === epoch) {
+              btn.classList.add("active");
+            } else {
+              btn.classList.remove("active");
+            }
+          }
+        });
+
+        renderPoints();
+        updateReadout(activeClusterId);
+        showCentroidToast(`Temporal Epoch: ${epoch === "T0" ? "Historical Baseline (T0)" : epoch === "T1" ? "Active Ingested (T1)" : "Projected Trend Forecast (T+1)"}`);
+      }
+
+      function stopDriftPlayback() {
+        if (driftPlayInterval) {
+          clearInterval(driftPlayInterval);
+          driftPlayInterval = null;
+        }
+        isPlayingDrift = false;
+        const btnPlay = document.getElementById("btn-play-drift");
+        if (btnPlay) {
+          btnPlay.innerHTML = "▶ PLAY TRAJECTORY";
+          btnPlay.classList.remove("is-playing");
+        }
+      }
+
+      function toggleDriftPlayback() {
+        const btnPlay = document.getElementById("btn-play-drift");
+        if (isPlayingDrift) {
+          stopDriftPlayback();
+        } else {
+          isPlayingDrift = true;
+          if (btnPlay) {
+            btnPlay.innerHTML = "⏸ PAUSE TRAJECTORY";
+            btnPlay.classList.add("is-playing");
+          }
+          const epochs = ["T0", "T1", "T+1"];
+          let curIdx = epochs.indexOf(currentEpoch);
+          if (curIdx === -1) curIdx = 1;
+
+          driftPlayInterval = setInterval(() => {
+            curIdx = (curIdx + 1) % epochs.length;
+            setEpoch(epochs[curIdx]);
+          }, 1600);
+        }
+      }
+
+      function setupDriftToolbarAndRadar() {
+        // 1. Epoch buttons
+        const btnT0 = document.getElementById("btn-epoch-t0");
+        const btnT1 = document.getElementById("btn-epoch-t1");
+        const btnT2 = document.getElementById("btn-epoch-t2");
+        if (btnT0) btnT0.addEventListener("click", () => { stopDriftPlayback(); setEpoch("T0"); });
+        if (btnT1) btnT1.addEventListener("click", () => { stopDriftPlayback(); setEpoch("T1"); });
+        if (btnT2) btnT2.addEventListener("click", () => { stopDriftPlayback(); setEpoch("T+1"); });
+
+        // 2. Play/Pause
+        const btnPlay = document.getElementById("btn-play-drift");
+        if (btnPlay) {
+          btnPlay.addEventListener("click", toggleDriftPlayback);
+        }
+
+        // 3. Show/Hide Trajectories Toggle
+        const chkDrift = document.getElementById("chk-show-drift");
+        if (chkDrift) {
+          chkDrift.addEventListener("change", (e) => {
+            showDriftTrajectories = e.target.checked;
+            renderDriftTrajectories();
+          });
+        }
+
+        // 4. Hydrate Radar Section & Telemetry
+        if (window.DRIFT_DATA) {
+          const d = window.DRIFT_DATA;
+          const el = id => document.getElementById(id);
+
+          if (el("drift-summary-pill")) {
+            el("drift-summary-pill").textContent = `SYS DRIFT: ${d.average_drift_rate}/ep · CONF: ${d.forecast_confidence_pct}%`;
+          }
+          if (el("metric-drift-rate")) {
+            el("metric-drift-rate").innerHTML = `${d.average_drift_rate} <span class="unit">/ epoch</span>`;
+          }
+          if (el("metric-drift-confidence")) {
+            el("metric-drift-confidence").textContent = `${d.forecast_confidence_pct}%`;
+          }
+          if (el("metric-forecast-horizon")) {
+            el("metric-forecast-horizon").textContent = d.forecast_horizon || "+1.0 Cycle";
+          }
+
+          // Max Dynamic Cluster
+          if (d.trajectories && d.trajectories.length > 0) {
+            const sortedByV = [...d.trajectories].sort((a, b) => b.drift_velocity - a.drift_velocity);
+            const topCluster = sortedByV[0];
+            if (el("metric-max-dynamic")) {
+              el("metric-max-dynamic").textContent = `K.${topCluster.cluster_id} // ${topCluster.label.toUpperCase()}`;
+            }
+          }
+
+          // Hydrate Breakout Chips
+          const chipsGrid = document.getElementById("breakout-chips-grid");
+          if (chipsGrid && d.breakout_signals && d.breakout_signals.length > 0) {
+            chipsGrid.innerHTML = "";
+            d.breakout_signals.forEach(sig => {
+              const chip = document.createElement("div");
+              chip.className = "breakout-chip-item";
+              chip.setAttribute("role", "button");
+              chip.setAttribute("tabindex", "0");
+              chip.setAttribute("title", `Click to locate Cluster ${sig.cluster_id} (${sig.cluster_label}) on manifold`);
+              chip.innerHTML = `
+                <div class="breakout-term-group">
+                  <span class="breakout-term-name">“${sig.word}”</span>
+                  <span class="breakout-cluster-tag">→ K.${sig.cluster_id} [${sig.cluster_label}]</span>
+                </div>
+                <div class="breakout-badge-group">
+                  <span class="breakout-vel-badge">${sig.growth_velocity} VELOCITY</span>
+                  <span class="breakout-tier-badge">${sig.emergence_tier}</span>
+                </div>
+              `;
+              chip.addEventListener("click", () => {
+                selectCluster(sig.cluster_id);
+                const mapPanel = document.getElementById("cluster-map-panel");
+                if (mapPanel) {
+                  mapPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+                showCentroidToast(`Focused Cluster ${sig.cluster_id} for breakout term "${sig.word}"`);
+              });
+              chipsGrid.appendChild(chip);
+            });
+          }
+
+          // Hydrate Kinematics Table
+          const kinTbody = document.getElementById("kinematics-table-body");
+          if (kinTbody && d.trajectories && d.trajectories.length > 0) {
+            kinTbody.innerHTML = "";
+            d.trajectories.forEach(traj => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td><strong style="color: var(--accent-brass);">K.${traj.cluster_id}</strong> // ${traj.label.toUpperCase()}</td>
+                <td>${traj.drift_velocity.toFixed(3)}</td>
+                <td style="color: ${traj.drift_acceleration >= 0 ? '#2ECC71' : '#E06C75'};">${traj.drift_acceleration >= 0 ? '+' : ''}${traj.drift_acceleration.toFixed(3)}</td>
+                <td>${traj.heading_angle > 0 ? '+' : ''}${traj.heading_angle.toFixed(1)}°</td>
+                <td><span style="font-size: 10px; color: var(--text-secondary);">${traj.heading_desc}</span></td>
+                <td>
+                  <button type="button" class="kinematics-btn-focus" data-cluster="${traj.cluster_id}">FOCUS</button>
+                </td>
+              `;
+              const focusBtn = tr.querySelector(".kinematics-btn-focus");
+              if (focusBtn) {
+                focusBtn.addEventListener("click", (e) => {
+                  e.stopPropagation();
+                  selectCluster(traj.cluster_id);
+                  const mapPanel = document.getElementById("cluster-map-panel");
+                  if (mapPanel) {
+                    mapPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }
+                });
+              }
+              tr.addEventListener("click", () => {
+                selectCluster(traj.cluster_id);
+              });
+              kinTbody.appendChild(tr);
+            });
+          }
+        }
+      }
+
       // Initialize Workbench & Mount
+      setupDriftToolbarAndRadar();
       setupWorkbench();
       setupEntityFilterTabs();
       setupImmediateActions();

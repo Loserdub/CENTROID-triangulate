@@ -500,11 +500,21 @@ def generate_dashboard(
         csv_rows.append(f'{rw["rank"]},"{rw["word"]}",{rw["count"]},{rw["tfidf_score"]:.4f},{rw["combined_score"]:.4f},{cid_disp},"{rw["cluster_label"]}",{sig_status}')
     structured_csv_payload = "\r\n".join(csv_rows)
 
+    drift_data = None
+    drift_file = BASE_DIR / "outputs" / "drift_analysis.json"
+    if drift_file.exists():
+        try:
+            with open(drift_file, "r", encoding="utf-8") as df:
+                drift_data = json.load(df)
+        except Exception as de:
+            logger.warning(f"Failed to load drift analysis: {de}")
+
     data_payload_injection = (
         f"window.CLEANED_CORPUS_TEXT = {safe_json_dumps(clean_corpus_text)};\n"
         f"      window.STRUCTURED_CSV_DATA = {safe_json_dumps(structured_csv_payload)};\n"
         f"      window.INITIAL_WORD_SCORES = {safe_json_dumps(ranked_words)};\n"
         f"      window.CORPUS_DOCUMENTS = {safe_json_dumps(corpus_docs)};\n"
+        f"      window.DRIFT_DATA = {safe_json_dumps(drift_data)};\n"
     )
     mount_target = "// Initialize Workbench & Mount"
     if mount_target in html_content:
@@ -564,15 +574,30 @@ def generate_dashboard(
     html_content = count_tag_pattern.sub(new_count_tag, html_content, count=1)
     # 6. Add Gap Analysis (if target_words.txt has entries)
     gap_analysis_html = build_gap_analysis_html(gaps, target_words)
+    existing_gap_pattern = re.compile(r'<div class="gap-analysis-section".*?</div>\s*(?=</details>)', re.DOTALL)
     if gap_analysis_html:
-        # Insert gap analysis section directly inside the ledger section before </details>
-        details_close_pattern = re.compile(r'(</div>\s*</details>)')
-        html_content = details_close_pattern.sub(f'</div>\n{gap_analysis_html}\n    </details>', html_content, count=1)
+        if existing_gap_pattern.search(html_content):
+            html_content = existing_gap_pattern.sub(gap_analysis_html + "\n    ", html_content, count=1)
+        else:
+            details_close_pattern = re.compile(r'(</div>\s*</details>)')
+            html_content = details_close_pattern.sub(f'</div>\n{gap_analysis_html}\n    </details>', html_content, count=1)
+    else:
+        html_content = existing_gap_pattern.sub("", html_content, count=1)
 
     # 7. Write to outputs/dashboard.html
     out_file.parent.mkdir(parents=True, exist_ok=True)
     with open(out_file, mode="w", encoding="utf-8") as f:
         f.write(html_content)
+
+    # Also synchronize root dashboard.html for GitHub Pages / static hosting
+    root_dashboard = BASE_DIR / "dashboard.html"
+    if out_file.resolve() != root_dashboard.resolve():
+        try:
+            with open(root_dashboard, mode="w", encoding="utf-8") as rf:
+                rf.write(html_content)
+            logger.info(f"Synchronized root dashboard at: '{root_dashboard}'")
+        except Exception as e:
+            logger.warning(f"Failed to synchronize root dashboard: {e}")
 
     logger.info(f"Generated standalone dashboard at: '{out_file}'")
 

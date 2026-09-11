@@ -64,6 +64,7 @@ SCRIPT_04_EXPAND = PIPELINE_DIR / "04_web_expand.py"
 SCRIPT_05_CLUSTER = PIPELINE_DIR / "05_cluster.py"
 SCRIPT_06_REPORT = PIPELINE_DIR / "06_report.py"
 SCRIPT_07_DASHBOARD = PIPELINE_DIR / "07_dashboard.py"
+SCRIPT_08_DRIFT = PIPELINE_DIR / "08_drift.py"
 
 # Key output paths
 PATH_CORPUS = BASE_DIR / "outputs" / "corpus.txt"
@@ -72,6 +73,7 @@ PATH_RANKED_CSV = BASE_DIR / "outputs" / "word_freq_ranked.csv"
 PATH_CLUSTERS_JSON = BASE_DIR / "outputs" / "clusters.json"
 PATH_REPORT_MD = BASE_DIR / "outputs" / "REPORT.md"
 PATH_DASHBOARD_HTML = BASE_DIR / "outputs" / "dashboard.html"
+PATH_DRIFT_JSON = BASE_DIR / "outputs" / "drift_analysis.json"
 PATH_RUN_STATE = BASE_DIR / "outputs" / "run_state.json"
 
 # Configure logging
@@ -327,6 +329,16 @@ def run_isolated_stage(
             state_mgr, force=force, params={"top": top_n}
         )
 
+    elif canonical_name == "08_drift":
+        if not PATH_CLUSTERS_JSON.exists():
+            print(f"\n[ERROR] Prerequisite clusters JSON '{PATH_CLUSTERS_JSON}' is missing.")
+            print("  Run '05_cluster' first to generate cluster vectors.\n")
+            return False
+        success = execute_stage_with_checkpoint(
+            "08_drift", SCRIPT_08_DRIFT, [], "Stage 08 (Semantic Drift Tracking)",
+            state_mgr, force=force
+        )
+
     else:
         logger.error(f"Unrecognized canonical stage handler for: {canonical_name}")
         success = False
@@ -347,7 +359,9 @@ def run_pipeline(
     lang: str = "en",
     force: bool = False,
     single_stage: Optional[str] = None,
-    min_words: int = 50
+    min_words: int = 50,
+    snapshot: Optional[str] = None,
+    drift: bool = False
 ) -> bool:
     """
     Main orchestration routine for running the CENTROID pipeline stages with state management.
@@ -380,7 +394,8 @@ def run_pipeline(
     print("=" * 78)
     print(f" Config: Top Words={top_n} | Clusters={clusters_k} | Stemming={'ON' if stem else 'OFF'} | "
           f"Web Expand={'ON' if web_expand else 'OFF'} | Report Only={'ON' if report_only else 'OFF'} | "
-          f"Dashboard={'ON' if dashboard else 'OFF'} | Force={'ON' if force else 'OFF'} | Lang={lang} | Min Words={min_words}")
+          f"Dashboard={'ON' if dashboard else 'OFF'} | Drift={'ON' if (drift or dashboard) else 'OFF'} | "
+          f"Snapshot={snapshot if snapshot is not None else 'OFF'} | Force={'ON' if force else 'OFF'} | Lang={lang} | Min Words={min_words}")
     print("=" * 78 + "\n")
 
     # Determine stopwords path based on --lang
@@ -520,7 +535,12 @@ def run_pipeline(
         "--top", str(top_n),
         "--clusters", str(clusters_k)
     ]
-    cluster_params = {"top": top_n, "clusters": clusters_k}
+    if snapshot is not None:
+        if snapshot:
+            cluster_args.extend(["--snapshot", str(snapshot)])
+        else:
+            cluster_args.append("--snapshot")
+    cluster_params = {"top": top_n, "clusters": clusters_k, "snapshot": snapshot}
     if not execute_stage_with_checkpoint(
         "05_cluster", SCRIPT_05_CLUSTER, cluster_args, "Stage 04 (Rank + Cluster)",
         state_mgr, force=force, params=cluster_params
@@ -548,6 +568,20 @@ def run_pipeline(
         print(f"Total elapsed time: {total_elapsed:.2f}s | Verdict: degraded")
         print("=" * 78 + "\n")
         return False
+
+    # -------------------------------------------------------------
+    # STAGE 08: SEMANTIC DRIFT TRACKING (08_drift.py)
+    # -------------------------------------------------------------
+    if drift or dashboard:
+        logger.info("\n>>> STAGE 08: TOPOLOGICAL DRIFT & PREDICTIVE FORECASTING (Procrustes SVD + Kinematics)")
+        drift_args = []
+        execute_stage_with_checkpoint(
+            "08_drift", SCRIPT_08_DRIFT, drift_args, "Stage 08 (Semantic Drift Tracking)",
+            state_mgr, force=force
+        )
+    else:
+        if state_mgr:
+            state_mgr.record_stage_skipped("08_drift", reason="Drift analysis not requested (--drift flag not passed)")
 
     # -------------------------------------------------------------
     # STAGE 07: INTERACTIVE DASHBOARD (Optional: 07_dashboard.py)
@@ -655,6 +689,20 @@ def parse_arguments() -> argparse.Namespace:
         default=50,
         help="Minimum corpus word count threshold for scanning (default: 50)."
     )
+    parser.add_argument(
+        "--snapshot",
+        type=str,
+        nargs="?",
+        const="",
+        default=None,
+        help="Archive current cluster run as an indexed temporal snapshot in outputs/snapshots/."
+    )
+    parser.add_argument(
+        "--drift",
+        action="store_true",
+        default=False,
+        help="Run cross-temporal Orthogonal Procrustes semantic drift analysis and trajectory forecast."
+    )
     return parser.parse_args()
 
 
@@ -671,7 +719,9 @@ def main():
             lang=args.lang,
             force=args.force,
             single_stage=args.stage,
-            min_words=args.min_words
+            min_words=args.min_words,
+            snapshot=args.snapshot,
+            drift=args.drift
         )
         sys.exit(0 if success else 1)
     except KeyboardInterrupt:

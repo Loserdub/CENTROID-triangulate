@@ -795,7 +795,14 @@
       transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease;
     }
 
-    .target-mode-pill.directed {
+    .target-mode-pill.off {
+      border-color: #64748B;
+      color: #94A3B8;
+      background: #11151A;
+    }
+
+    .target-mode-pill.directed,
+    .target-mode-pill.targeted {
       border-color: var(--accent-brass);
       color: var(--accent-brass);
       background: rgba(201, 138, 62, 0.12);
@@ -949,14 +956,17 @@
       background: rgba(255, 255, 255, 0.04);
     }
 
-    .mode-toggle-btn.active[data-mode="general"] {
+    .mode-toggle-btn.active[data-mode="general"],
+    .mode-toggle-btn.active[data-mode="off"] {
       background: #1C222B;
       color: #F1F5F9;
       border-color: #64748B;
       font-weight: 700;
     }
 
-    .mode-toggle-btn.active[data-mode="directed"] {
+    .mode-toggle-btn.active[data-mode="directed"],
+    .mode-toggle-btn.active[data-mode="on"],
+    .mode-toggle-btn.active[data-mode="targeted"] {
       background: rgba(201, 138, 62, 0.18);
       color: var(--accent-brass);
       border-color: var(--accent-brass);
@@ -987,7 +997,8 @@
       transition: border-color 150ms ease;
     }
 
-    .mode-explanation-banner.directed {
+    .mode-explanation-banner.directed,
+    .mode-explanation-banner.targeted {
       border-left-color: var(--accent-brass);
     }
 
@@ -996,13 +1007,26 @@
       font-weight: 700;
     }
 
-    .mode-explanation-banner.directed .mode-bullet {
+    .mode-explanation-banner.directed .mode-bullet,
+    .mode-explanation-banner.targeted .mode-bullet {
       color: var(--accent-brass);
     }
 
     .filter-textarea.directed-focus {
       border-color: rgba(201, 138, 62, 0.6) !important;
       background-color: #171A20 !important;
+    }
+
+    .filter-textarea.target-words-disabled {
+      opacity: 0.52;
+      border-style: dashed !important;
+      border-color: var(--hairline) !important;
+      cursor: pointer;
+    }
+
+    .filter-textarea.target-words-disabled:hover {
+      opacity: 0.8;
+      border-color: #64748B !important;
     }
 
     .target-words-footer {
@@ -3687,52 +3711,54 @@
             <div class="target-words-header">
               <div class="target-title-wrap">
                 <span class="bay-label">Target Words</span>
-                <span class="target-mode-pill" id="target-mode-pill">GENERAL</span>
+                <span class="target-mode-pill off" id="target-mode-pill">OFF · GENERAL</span>
               </div>
               
-              <!-- Segmented Toggle: GENERAL vs DIRECTED with Rich Hover Explainers -->
+              <!-- Segmented Toggle: OFF (GENERAL) vs ON (TARGETED) with Rich Hover Explainers -->
               <div class="mode-toggle-group" role="radiogroup" aria-label="Target Words Analysis Mode">
                 <div class="mode-toggle-wrapper">
-                  <button type="button" class="mode-toggle-btn active" id="btn-mode-general" data-mode="general" role="radio" aria-checked="true" aria-haspopup="true">
+                  <button type="button" class="mode-toggle-btn active" id="btn-mode-general" data-mode="off" role="radio" aria-checked="true" aria-haspopup="true">
                     <span class="mode-radio-dot"></span>
-                    <span>GENERAL</span>
+                    <span>OFF · GENERAL</span>
                   </button>
                   <div class="mode-hover-card mode-hover-general" role="tooltip">
                     <div class="mode-card-header">
-                      <span class="mode-card-badge badge-general">MODE // GENERAL DISCOVERY</span>
-                      <span class="mode-card-status">UNBIASED</span>
+                      <span class="mode-card-badge badge-general">MODE // GENERAL (TARGET WORDS OFF)</span>
+                      <span class="mode-card-status">UNBIASED · TOP 5</span>
                     </div>
-                    <div class="mode-card-title">Unsupervised Natural Clustering</div>
+                    <div class="mode-card-title">Unsupervised Top-Words Discovery</div>
                     <div class="mode-card-desc">
-                      Discovers semantic structure organically from raw word co-occurrences without imposing preconceived anchors.
+                      Discovers semantic structure organically from raw word frequency and co-occurrence. Target words are optional and completely bypassed.
                     </div>
                     <ul class="mode-card-bullets">
-                      <li><strong>Centroid Anchors:</strong> Formed strictly from the highest-density natural vocabulary clusters in the corpus.</li>
-                      <li><strong>Target Words:</strong> Monitored passively for Gap Analysis (reveals which target terms are present vs missing).</li>
+                      <li><strong>Centroid Anchors:</strong> Top 5 dominant vocabulary words form the 5 primary centroids on the graph.</li>
+                      <li><strong>Target Words:</strong> OFF / Disabled. All tokens are treated equally with standard stopword filtering.</li>
+                      <li><strong>Measurement Surfaces:</strong> Readouts, entity cloud, and ledger reflect unbiased natural vocabulary metrics.</li>
                     </ul>
                     <div class="mode-card-footer">
-                      <span class="mode-card-best">BEST FOR:</span> Impartial exploratory audits &amp; discovering latent themes you didn&apos;t know were there.
+                      <span class="mode-card-best">BEST FOR:</span> Impartial exploratory audits &amp; discovering the organic top 5 dominant themes.
                     </div>
                   </div>
                 </div>
 
                 <div class="mode-toggle-wrapper">
-                  <button type="button" class="mode-toggle-btn" id="btn-mode-directed" data-mode="directed" role="radio" aria-checked="false" aria-haspopup="true">
+                  <button type="button" class="mode-toggle-btn" id="btn-mode-directed" data-mode="on" role="radio" aria-checked="false" aria-haspopup="true">
                     <span class="mode-radio-dot"></span>
-                    <span>DIRECTED</span>
+                    <span>ON · TARGETED</span>
                   </button>
                   <div class="mode-hover-card mode-hover-directed" role="tooltip">
                     <div class="mode-card-header">
-                      <span class="mode-card-badge badge-directed">MODE // THEMATIC STEERING</span>
-                      <span class="mode-card-status">SUPERVISED</span>
+                      <span class="mode-card-badge badge-directed">MODE // TARGETED SCAN (TARGET WORDS ON)</span>
+                      <span class="mode-card-status">SUPERVISED · K=10</span>
                     </div>
                     <div class="mode-card-title">Target-Centric Taxonomy Steering</div>
                     <div class="mode-card-desc">
-                      Forces semantic clusters to pin directly around your verified target keywords, pulling related terms into their orbit.
+                      Forces semantic clusters to pin directly around your verified target keywords, pulling related terms into their orbit and tracking keyword coverage gaps.
                     </div>
                     <ul class="mode-card-bullets">
                       <li><strong>Centroid Anchors:</strong> Steered directly around seen target keywords present on the page.</li>
-                      <li><strong>Surrounding Words:</strong> Associated terms, synonyms, and subtopics gravitate to your target clusters.</li>
+                      <li><strong>Target Words:</strong> ON / Active. Tracked for gap analysis, highlighted with target badges, and protected from noise filters.</li>
+                      <li><strong>Topology:</strong> Generates up to 10 clusters and measures target coverage gaps.</li>
                     </ul>
                     <div class="mode-card-footer">
                       <span class="mode-card-best">BEST FOR:</span> Tracking specific competitors, strategic initiatives, or domain-specific taxonomies.
@@ -3745,14 +3771,14 @@
             <!-- Mode Description Micro-banner -->
             <div class="mode-explanation-banner" id="mode-explanation">
               <span class="mode-bullet">// MODE:</span>
-              <span id="mode-desc-text">GENERAL DISCOVERY — Unbiased full vocabulary scan. All non-exempt words are clustered naturally across the corpus. Target words are monitored passively for gap analysis.</span>
+              <span id="mode-desc-text">GENERAL DISCOVERY (TARGET WORDS OFF) — Unbiased full vocabulary scan. Automatically discovers top words and displays the top 5 dominant centroids on the graph. Target words are bypassed.</span>
             </div>
 
-            <textarea id="target-words-input" class="filter-textarea" rows="2" placeholder="centroid, clustering, algorithm, latency, benchmark, vector..."></textarea>
+            <textarea id="target-words-input" class="filter-textarea target-words-disabled" rows="2" placeholder="Target words are optional (OFF). Click to activate or enter: centroid, clustering, algorithm, latency, benchmark..."></textarea>
             
             <div class="target-words-footer">
-              <span class="target-status-label" id="target-status-label">14 target keywords loaded</span>
-              <button type="button" class="btn-micro" id="btn-reset-target-words">Reset Defaults</button>
+              <span class="target-status-label" id="target-status-label">Target words off · General top-words scan (Top 5 on graph)</span>
+              <button type="button" class="btn-micro" id="btn-reset-target-words" disabled>Reset Defaults</button>
             </div>
           </div>
 
@@ -4237,7 +4263,7 @@
             <div class="luxe-anchor-signature">
               <span class="luxe-sig-label">LATENT NUCLEUS:</span>
               <span class="luxe-anchor-word" id="readout-anchor-word">“data”</span>
-              <span class="luxe-gold-pill">★ ANCHOR CENTROID</span>
+              <span class="luxe-gold-pill" id="readout-anchor-pill">★ ANCHOR CENTROID</span>
             </div>
           </div>
 
@@ -4296,7 +4322,7 @@
               <div class="luxe-engine-list">
                 <div class="engine-row"><span>KERNEL:</span> <span class="engine-val">K-MEANS</span></div>
                 <div class="engine-row"><span>DIMENSIONS:</span> <span class="engine-val">100 VECTORS</span></div>
-                <div class="engine-row"><span>MODE:</span> <span class="engine-val">LOCAL CPU / ZERO-API</span></div>
+                <div class="engine-row"><span>MODE:</span> <span class="engine-val" id="readout-topology-mode">GENERAL (TOP 5)</span></div>
               </div>
             </div>
 
@@ -9670,8 +9696,10 @@
       // Active selected cluster
       let activeClusterId = "01";
 
-      // Mutable active cluster dataset
-      let currentClusters = [...CLUSTER_DATA];
+      // Mutable active cluster dataset (full pool vs active visible slice)
+      let allClusters = (typeof CLUSTER_DATA !== "undefined" && Array.isArray(CLUSTER_DATA)) ? [...CLUSTER_DATA] : [];
+      let targetWordsActive = false; // Default: OFF (top words discovery, top 5 on graph)
+      let currentClusters = allClusters.slice(0, 5);
 
       // Temporal Semantic Drift Tracking State
       let currentEpoch = "T1"; // "T0", "T1", "T+1"
@@ -9910,6 +9938,11 @@
         if (el("readout-cluster-badge")) el("readout-cluster-badge").textContent = `K.${c.id}`;
         if (el("readout-cluster-name")) el("readout-cluster-name").textContent = `CLUSTER_${c.id} // "${c.label.toUpperCase()}"`;
         if (el("readout-anchor-word")) el("readout-anchor-word").textContent = `“${c.centroid}”`;
+        if (el("readout-anchor-pill")) el("readout-anchor-pill").textContent = targetWordsActive ? "★ TARGET ANCHOR" : "★ TOP WORD CENTROID";
+        if (el("readout-status-indicator")) el("readout-status-indicator").textContent = targetWordsActive ? "TARGETED (K=10)" : "GENERAL (TOP 5)";
+        if (el("readout-topology-mode")) el("readout-topology-mode").textContent = targetWordsActive ? "TARGETED / SEED ANCHORS" : "GENERAL / TOP 5 FREQUENCY";
+        if (el("cluster-panel-meta")) el("cluster-panel-meta").textContent = targetWordsActive ? "KMEANS // K=10 // 100-DIM W2V // TARGETED" : "KMEANS // K=5 // TOP 5 WORDS // GENERAL DISCOVERY";
+        if (el("header-cluster-count")) el("header-cluster-count").textContent = `k=${currentClusters.length}`;
         if (el("readout-strength-pct")) el("readout-strength-pct").textContent = `${c.strength}%`;
         if (el("readout-strength-bar")) el("readout-strength-bar").textContent = getUnicodeBar(c.strength);
         if (el("readout-share-pct")) el("readout-share-pct").textContent = `${c.pctShare}%`;
@@ -9942,9 +9975,10 @@
           memberWords.forEach((word) => {
             const chip = document.createElement("span");
             const isAnchor = (word.toLowerCase() === c.centroid.toLowerCase());
-            chip.className = `token-chip ${isAnchor ? "anchor-chip" : ""}`;
+            const isTarget = targetWordsActive && cachedTargetSet && cachedTargetSet.has(word.toLowerCase());
+            chip.className = `token-chip ${isAnchor ? "anchor-chip" : ""} ${isTarget ? "target-chip" : ""}`;
             chip.textContent = word;
-            chip.title = `Word in Cluster ${c.id}`;
+            chip.title = `Word in Cluster ${c.id}${isTarget ? " (Target Keyword)" : ""}`;
             cloud.appendChild(chip);
           });
         }
@@ -10071,8 +10105,142 @@
         "clustering"
 ];
 
+      let savedTargetGapHtml = "";
+
+      function updateTableForTargetMode(isActive) {
+        const tbody = document.getElementById("ranked-table-body");
+        if (!tbody) return;
+        const rows = tbody.querySelectorAll("tr");
+        const targetSet = isActive ? (cachedTargetSet || new Set()) : new Set();
+        const kCount = currentClusters.length || (isActive ? 10 : 5);
+
+        rows.forEach((row, idx) => {
+          const cells = row.querySelectorAll("td");
+          if (!cells || cells.length < 7) return;
+          const wordCell = cells[1];
+          const existingBadge = wordCell.querySelector(".directed-badge, .general-badge");
+          if (existingBadge) existingBadge.remove();
+
+          const wordText = wordCell.textContent.trim().toLowerCase();
+          if (isActive && targetSet.has(wordText)) {
+            const badge = document.createElement("span");
+            badge.className = "directed-badge";
+            badge.textContent = "TARGET";
+            wordCell.appendChild(document.createTextNode(" "));
+            wordCell.appendChild(badge);
+          }
+
+          const assignedCid = (idx % kCount) + 1;
+          const clusterObj = currentClusters[assignedCid - 1];
+          cells[5].textContent = String(assignedCid).padStart(2, "0");
+          cells[6].textContent = clusterObj?.label || "—";
+        });
+
+        const ledgerTitle = document.querySelector(".ledger-title");
+        if (ledgerTitle) {
+          ledgerTitle.textContent = isActive 
+            ? `Ranked Word Frequency Ledger (Top 504 · Target Words Monitored)`
+            : `Ranked Word Frequency Ledger (Top 504 · General Unbiased Distribution)`;
+        }
+      }
+
+      function updateGapAnalysisView() {
+        const container = document.querySelector(".gap-analysis-section");
+        if (!container) return;
+
+        if (!savedTargetGapHtml && container.innerHTML.includes("GAP ANALYSIS: TARGET WORDS")) {
+          savedTargetGapHtml = container.innerHTML;
+        }
+
+        if (targetWordsActive) {
+          if (cachedWordScores && cachedWordScores.length > 0 && cachedTargetSet && cachedTargetSet.size > 0) {
+            const targetWords = Array.from(cachedTargetSet);
+            const scoreMap = new Map(cachedWordScores.map(it => [it.word, it]));
+            const totalCorpus = (typeof totalTokens !== "undefined" && totalTokens > 0) ? totalTokens : 15862;
+            const gaps = [];
+            targetWords.forEach(w => {
+              const entry = scoreMap.get(w);
+              const cnt = entry ? entry.count : 0;
+              const pct = ((cnt / totalCorpus) * 100).toFixed(2);
+              if (cnt === 0) {
+                gaps.push({ word: w, count: 0, pct: pct, status: "ABSENT", color: "#E06C75" });
+              } else if (entry && entry.tfidf_score < 0.25) {
+                gaps.push({ word: w, count: cnt, pct: pct, status: "LOW FREQ", color: "var(--accent-brass)" });
+              }
+            });
+            let itemsHtml = "";
+            if (gaps.length === 0) {
+              itemsHtml = '<div style="color: var(--text-secondary); font-style: italic; padding: 4px 0;">* No content gaps detected — all target words are well-represented in the corpus.</div>';
+            } else {
+              gaps.forEach(g => {
+                itemsHtml += `
+                  <div style="color: var(--text-primary); padding: 3px 0; display: flex; align-items: baseline; gap: 8px;">
+                    <span style="color: var(--accent-data);">&gt;</span>
+                    <code style="color: var(--accent-brass); font-weight: 600; font-size: 12px;">${g.word}</code>
+                    <span style="color: var(--text-secondary);">&mdash; appeared only ${g.count} times (${g.pct}%)</span>
+                    <span style="color: ${g.color}; font-size: 10px; letter-spacing: 0.04em;">[${g.status}]</span>
+                  </div>
+                `;
+              });
+            }
+            container.innerHTML = `
+              <div style="font-weight: 600; color: var(--accent-brass); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+                <span>// GAP ANALYSIS: TARGET WORDS COVERAGE</span>
+                <span style="color: var(--text-secondary); font-size: 10px;">[${gaps.length} GAPS DETECTED / ${targetWords.length} TARGET WORDS]</span>
+              </div>
+              <div style="color: var(--text-secondary); margin-bottom: 10px; font-size: 11px;">
+                Cross-referenced against verified target keywords (words absent or in the bottom third of corpus frequency):
+              </div>
+              <div class="gap-list" style="display: flex; flex-direction: column; gap: 2px;">
+                ${itemsHtml}
+              </div>
+            `;
+            return;
+          }
+          if (savedTargetGapHtml) {
+            container.innerHTML = savedTargetGapHtml;
+          }
+        } else {
+
+          const top5 = (currentClusters || []).slice(0, 5);
+          const totalCorpus = (typeof totalTokens !== "undefined" && totalTokens > 0) ? totalTokens : 15862;
+
+          let itemsHtml = "";
+          if (top5.length === 0) {
+            itemsHtml = '<div style="color: var(--text-secondary); font-style: italic; padding: 4px 0;">* No clusters formed yet. Run corpus scan to discover top words.</div>';
+          } else {
+            top5.forEach((c, idx) => {
+              const pct = c.pctShare || ((c.count / totalCorpus) * 100).toFixed(2);
+              itemsHtml += `
+                <div style="color: var(--text-primary); padding: 3px 0; display: flex; align-items: baseline; gap: 8px;">
+                  <span style="color: var(--accent-data); font-weight: 700;">&gt; #0${idx + 1}</span>
+                  <code style="color: var(--accent-brass); font-weight: 600; font-size: 12px;">${c.label}</code>
+                  <span style="color: var(--text-secondary);">— anchor for Cluster K.${c.id} (${(c.count || 0).toLocaleString()} tokens · ${pct}% share)</span>
+                  <span style="color: var(--accent-data); font-size: 10px; letter-spacing: 0.04em;">[TOP 5 DOMINANT]</span>
+                </div>
+              `;
+            });
+          }
+
+          container.innerHTML = `
+            <div style="font-weight: 600; color: var(--accent-data); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span>// GENERAL VOCABULARY COVERAGE &amp; DISPERSION</span>
+              <span style="color: var(--text-secondary); font-size: 10px;">[TOP 5 DOMINANT CENTROIDS // TARGET WORDS OFF]</span>
+            </div>
+            <div style="color: var(--text-secondary); margin-bottom: 10px; font-size: 11px;">
+              Target words measurement is toggled OFF. Surface-level coverage is measured against the top 5 dominant vocabulary centroids across the corpus (unbiased frequency distribution). Enable Target Words in Bay 03 to track specific domain keyword coverage.
+            </div>
+            <div class="gap-list" style="display: flex; flex-direction: column; gap: 2px;">
+              ${itemsHtml}
+            </div>
+          `;
+        }
+      }
+
       function setScanMode(mode) {
-        currentScanMode = mode;
+        targetWordsActive = (mode === "directed" || mode === "targeted" || mode === "on");
+        currentScanMode = targetWordsActive ? "directed" : "general";
+
         const btnGeneral = document.getElementById("btn-mode-general");
         const btnDirected = document.getElementById("btn-mode-directed");
         const modePill = document.getElementById("target-mode-pill");
@@ -10080,8 +10248,9 @@
         const modeDesc = document.getElementById("mode-desc-text");
         const targetInput = document.getElementById("target-words-input");
         const readoutModeTag = document.getElementById("readout-mode-tag");
+        const resetBtn = document.getElementById("btn-reset-target-words");
 
-        if (mode === "general") {
+        if (!targetWordsActive) {
           if (btnGeneral) {
             btnGeneral.classList.add("active");
             btnGeneral.setAttribute("aria-checked", "true");
@@ -10091,21 +10260,32 @@
             btnDirected.setAttribute("aria-checked", "false");
           }
           if (modePill) {
-            modePill.textContent = "GENERAL";
-            modePill.classList.remove("directed");
+            modePill.textContent = "OFF · GENERAL";
+            modePill.classList.remove("directed", "targeted");
+            modePill.classList.add("off");
           }
           if (modeBanner) {
-            modeBanner.classList.remove("directed");
+            modeBanner.classList.remove("directed", "targeted");
           }
           if (modeDesc) {
-            modeDesc.textContent = "GENERAL DISCOVERY — Unbiased full vocabulary scan. All non-exempt words are clustered naturally across the corpus. Target words are monitored passively for gap analysis.";
+            modeDesc.textContent = "GENERAL DISCOVERY (TARGET WORDS OFF) — Unbiased full vocabulary scan. Automatically discovers top words and displays top 5 on the graph. Target words are bypassed.";
           }
           if (targetInput) {
             targetInput.classList.remove("directed-focus");
+            targetInput.classList.add("target-words-disabled");
+          }
+          if (resetBtn) {
+            resetBtn.disabled = true;
           }
           if (readoutModeTag) {
-            readoutModeTag.textContent = "MODE: GENERAL";
+            readoutModeTag.textContent = "MODE: GENERAL (TOP 5)";
             readoutModeTag.style.color = "var(--text-secondary)";
+          }
+
+          // Render top 5 clusters on graph
+          currentClusters = allClusters.slice(0, 5);
+          if (!currentClusters.some(c => c.id === activeClusterId)) {
+            activeClusterId = currentClusters[0]?.id || "01";
           }
         } else {
           if (btnDirected) {
@@ -10117,29 +10297,38 @@
             btnGeneral.setAttribute("aria-checked", "false");
           }
           if (modePill) {
-            modePill.textContent = "DIRECTED";
-            modePill.classList.add("directed");
+            modePill.textContent = "ON · TARGETED";
+            modePill.classList.remove("off");
+            modePill.classList.add("directed", "targeted");
           }
           if (modeBanner) {
-            modeBanner.classList.add("directed");
+            modeBanner.classList.add("directed", "targeted");
           }
           if (modeDesc) {
-            modeDesc.textContent = "DIRECTED TARGET SCAN — Clustering & scoring are steered around target keywords. Target words act as primary seeds/anchors for centroids and semantic neighborhoods.";
+            modeDesc.textContent = "DIRECTED TARGET SCAN (TARGET WORDS ON) — Clustering & scoring are steered around target keywords. Target words act as primary seeds/anchors for centroids and semantic neighborhoods. Full 10-cluster topology and gap analysis active.";
           }
           if (targetInput) {
+            targetInput.classList.remove("target-words-disabled");
             targetInput.classList.add("directed-focus");
           }
+          if (resetBtn) {
+            resetBtn.disabled = false;
+          }
           if (readoutModeTag) {
-            readoutModeTag.textContent = "MODE: DIRECTED";
+            readoutModeTag.textContent = "MODE: TARGETED";
             readoutModeTag.style.color = "var(--accent-brass)";
           }
+
+          // Restore full 10 clusters on graph
+          currentClusters = [...allClusters];
         }
+
         updateTargetStatus();
-        
-        // If we already have clusters, refresh readout badge
-        if (activeClusterId) {
-          updateReadout(activeClusterId);
-        }
+        renderPoints();
+        updateReadout(activeClusterId);
+        updateImmediateMetrics(null, null, cachedWordScores, targetWordsActive ? cachedTargetSet : null);
+        updateTableForTargetMode(targetWordsActive);
+        updateGapAnalysisView();
       }
 
       function updateTargetStatus() {
@@ -10147,11 +10336,12 @@
         const statusLbl = document.getElementById("target-status-label");
         if (!targetInput || !statusLbl) return;
         const words = targetInput.value.split(/[,\n\s]+/).map(w => w.trim().toLowerCase()).filter(Boolean);
-        if (currentScanMode === "directed") {
+        cachedTargetSet = new Set(words);
+        if (targetWordsActive) {
           statusLbl.textContent = `${words.length} target keywords actively steering centroids`;
           statusLbl.style.color = "var(--accent-brass)";
         } else {
-          statusLbl.textContent = `${words.length} target keywords monitored for gaps`;
+          statusLbl.textContent = "Target words off · General top-words scan (Top 5 on graph)";
           statusLbl.style.color = "var(--text-muted)";
         }
       }
@@ -10167,28 +10357,34 @@
 
       function setupWorkbench() {
         const slotsContainer = document.getElementById("url-slots-container");
-        // Wire up Target Words Mode Toggle (General vs Directed)
+        // Wire up Target Words Mode Toggle (General/Off vs Directed/On)
         const btnGeneral = document.getElementById("btn-mode-general");
         const btnDirected = document.getElementById("btn-mode-directed");
         const btnResetTarget = document.getElementById("btn-reset-target-words");
         const targetInput = document.getElementById("target-words-input");
 
         if (btnGeneral) {
-          btnGeneral.addEventListener("click", () => setScanMode("general"));
+          btnGeneral.addEventListener("click", () => setScanMode("off"));
         }
         if (btnDirected) {
-          btnDirected.addEventListener("click", () => setScanMode("directed"));
+          btnDirected.addEventListener("click", () => setScanMode("on"));
+        }
+        if (targetInput) {
+          targetInput.value = DEFAULT_TARGET_WORDS.join(", ");
+          // Clicking textarea while OFF activates target words mode
+          targetInput.addEventListener("click", () => {
+            if (!targetWordsActive) {
+              setScanMode("on");
+            }
+          });
+          targetInput.addEventListener("input", updateTargetStatus);
+          updateTargetStatus();
         }
         if (btnResetTarget && targetInput) {
           btnResetTarget.addEventListener("click", () => {
             targetInput.value = DEFAULT_TARGET_WORDS.join(", ");
             updateTargetStatus();
           });
-        }
-        if (targetInput) {
-          targetInput.value = DEFAULT_TARGET_WORDS.join(", ");
-          targetInput.addEventListener("input", updateTargetStatus);
-          updateTargetStatus();
         }
 
         const exemptInput = document.getElementById("exempt-words-input");
@@ -10560,7 +10756,7 @@
           }
         }
 
-        renderEntityCloud(cachedWordScores, cachedTargetSet, currentEntityFilter);
+        renderEntityCloud(cachedWordScores, targetWordsActive ? cachedTargetSet : null, currentEntityFilter);
       }
 
       function renderEntityCloud(wordScores, targetSet, filterMode) {
@@ -10573,7 +10769,7 @@
         items.forEach((item, idx) => {
           const word = item.word;
           const count = item.count;
-          const isTarget = targetSet ? targetSet.has(word) : false;
+          const isTarget = (targetWordsActive && targetSet) ? targetSet.has(word) : false;
 
           // Filter checks
           if (filterMode === "core" && !isTarget && idx >= 15) return;
@@ -10583,8 +10779,8 @@
           chip.className = `entity-chip ${isTarget ? "target-anchor" : ""}`;
           chip.title = `Rank #${idx + 1} · Count: ${count.toLocaleString()} occurrences · Verified preserved subject term`;
 
-          let roleTag = isTarget ? "TARGET ANCHOR" : (idx < 6 ? "DOMINANT NOUN" : "CORE TERM");
-          if (word.endsWith("tion") || word.endsWith("ment") || word.endsWith("ism")) {
+          let roleTag = isTarget ? "TARGET ANCHOR" : (idx < 5 ? "TOP 5 DOMINANT" : (idx < 12 ? "CORE NOUN" : "CORE TERM"));
+          if (!isTarget && (word.endsWith("tion") || word.endsWith("ment") || word.endsWith("ism"))) {
             roleTag = "TOPIC NOUN";
           }
 
@@ -10601,7 +10797,11 @@
         const verifText = document.getElementById("verification-text");
         if (verifText && items.length >= 5) {
           const topKeywords = items.slice(0, 5).map(it => `<em>${it.word.charAt(0).toUpperCase() + it.word.slice(1)}</em>`).join(", ");
-          verifText.innerHTML = `<strong>Subject Matter Verified Intact:</strong> Primary concepts: ${topKeywords}.`;
+          if (targetWordsActive) {
+            verifText.innerHTML = `<strong>Subject Matter Verified Intact:</strong> Primary target &amp; core concepts: ${topKeywords}.`;
+          } else {
+            verifText.innerHTML = `<strong>Subject Matter Verified Intact:</strong> Top 5 general concepts: ${topKeywords}.`;
+          }
         }
       }
 
@@ -10723,12 +10923,12 @@
           
           rawTokens.forEach(t => {
             totalTokens++;
-            // Rule 2: Remove tokens < 3 chars UNLESS target word
-            if (t.length < 3 && !targetSet.has(t)) {
+            // Rule 2: Remove tokens < 3 chars UNLESS target word (only if targetWordsActive)
+            if (t.length < 3 && (!targetWordsActive || !targetSet.has(t))) {
               return;
             }
-            // Rule 4: Strip exempt words UNLESS target word (Rule 5)
-            if (exemptSet.has(t) && !targetSet.has(t)) {
+            // Rule 4: Strip exempt words UNLESS target word (Rule 5, only if targetWordsActive)
+            if (exemptSet.has(t) && (!targetWordsActive || !targetSet.has(t))) {
               exemptFilteredCount++;
               return;
             }
@@ -10769,14 +10969,13 @@
         // Sort descending by combined score
         wordScores.sort((a, b) => b.combined_score - a.combined_score);
 
-        // 7. Cluster into K Centroids (Stage 4) — Directed vs General Mode
-        const K = Math.min(10, Math.max(3, wordScores.length));
+        // 7. Cluster into Centroids (Stage 4) — Directed (K=10) vs General Mode (Top 5 on Graph)
+        const K = targetWordsActive ? Math.min(10, Math.max(3, wordScores.length)) : Math.min(5, wordScores.length);
         const newClusters = [];
         const topWords = wordScores.slice(0, 100);
 
-        if (currentScanMode === "directed") {
+        if (targetWordsActive) {
           // DIRECTED MODE: Prioritize target words as primary cluster anchors!
-          // MANDATORY: "Do not include in results if a word is absent form the sample portion. that means it wasnt on the page only score seen words"
           const seenTargets = Array.from(targetSet).filter(targetWord => {
             const entry = wordScores.find(item => item.word === targetWord);
             return entry && entry.count > 0;
@@ -10862,7 +11061,7 @@
             clusterIdx++;
           }
         } else {
-          // GENERAL MODE: Natural unbiased clustering across entire vocabulary (strictly count > 0)
+          // GENERAL MODE (TARGET WORDS OFF): Natural unbiased top words -> EXACTLY TOP 5 ON THE GRAPH!
           for (let k = 0; k < K; k++) {
             if (!topWords[k] || (topWords[k].count || 0) <= 0) break;
             const anchorEntry = topWords[k];
@@ -10877,7 +11076,7 @@
 
             const clusterCount = memberWords.reduce((sum, w) => sum + (globalWordCounts[w] || 0), 0);
             const pctShare = Number(((clusterCount / (totalTokens || 1)) * 100).toFixed(2));
-            const velocity = Number(Math.max(0.18, Math.min(0.92, 0.95 - (k * 0.08))).toFixed(2));
+            const velocity = Number(Math.max(0.18, Math.min(0.92, 0.95 - (k * 0.14))).toFixed(2));
             const density = Number(Math.max(0.38, Math.min(0.88, anchorEntry.tfidf_score * 0.85 + 0.25)).toFixed(3));
             const strength = Math.min(95, Math.max(25, Math.round(anchorEntry.combined_score * 4 + 20)));
 
@@ -10897,11 +11096,13 @@
         }
 
         // Update dataset and re-render
-        currentClusters = newClusters;
-        activeClusterId = (newClusters[0] && newClusters[0].id) || "01";
-        updateImmediateMetrics(totalTokens, exemptFilteredCount, wordScores, targetSet);
+        allClusters = [...newClusters];
+        currentClusters = targetWordsActive ? allClusters : allClusters.slice(0, 5);
+        activeClusterId = (currentClusters[0] && currentClusters[0].id) || "01";
+        updateImmediateMetrics(totalTokens, exemptFilteredCount, wordScores, targetWordsActive ? targetSet : null);
         renderPoints();
         updateReadout(activeClusterId);
+        updateGapAnalysisView();
 
         // Update Header Telemetry
         const hCorpus = document.getElementById("header-corpus-count");
@@ -10911,46 +11112,51 @@
         if (hCorpus) hCorpus.textContent = `${documents.length} SOURCES`;
         if (hTokens) hTokens.textContent = totalTokens.toLocaleString();
         if (hVocab) hVocab.textContent = `${wordScores.length.toLocaleString()} UNIQUE`;
-        if (hClusters) hClusters.textContent = `k=${newClusters.length}`;
+        if (hClusters) hClusters.textContent = `k=${currentClusters.length}`;
 
         // Update Ranked Table (Top 504) — STRICT: Only display words seen on the page (count > 0)
         const tbody = document.getElementById("ranked-table-body");
         if (tbody) {
           tbody.innerHTML = "";
           const displayScores = wordScores.filter(item => item && item.count > 0).slice(0, 504);
+          const kCount = currentClusters.length || (targetWordsActive ? 10 : 5);
           displayScores.forEach((entry, idx) => {
             const tr = document.createElement("tr");
             const rankStr = String(idx + 1).padStart(4, "0");
-            const assignedCluster = (idx % (newClusters.length || 1)) + 1;
+            const assignedCluster = (idx % kCount) + 1;
+            const isTarget = targetWordsActive && targetSet.has(entry.word);
+            const targetBadge = isTarget ? ' <span class="directed-badge">TARGET</span>' : '';
             tr.innerHTML = `
               <td class="rank-col">${rankStr}</td>
-              <td class="word-col">${entry.word}${targetSet.has(entry.word) ? (currentScanMode === "directed" ? ' <span class="directed-badge">TARGET</span>' : ' <span class="general-badge">TARGET</span>') : ''}</td>
+              <td class="word-col">${entry.word}${targetBadge}</td>
               <td class="count-col">${entry.count.toLocaleString()}</td>
               <td class="tfidf-col">${entry.tfidf_score.toFixed(4)}</td>
               <td class="score-col">${entry.combined_score.toFixed(4)}</td>
               <td class="cluster-col">${String(assignedCluster).padStart(2, "0")}</td>
-              <td class="cluster-col">${newClusters[assignedCluster - 1]?.label || "—"}</td>
+              <td class="cluster-col">${currentClusters[assignedCluster - 1]?.label || "—"}</td>
             `;
             tbody.appendChild(tr);
           });
           const ledgerTitle = document.querySelector(".ledger-title");
-          if (ledgerTitle) ledgerTitle.textContent = `Ranked Word Frequency Ledger (Top ${displayScores.length})`;
+          if (ledgerTitle) ledgerTitle.textContent = targetWordsActive
+            ? `Ranked Word Frequency Ledger (Top ${displayScores.length} · Target Words Monitored)`
+            : `Ranked Word Frequency Ledger (Top ${displayScores.length} · General Unbiased Distribution)`;
           const ledgerCount = document.querySelector(".ledger-count-tag");
           if (ledgerCount) ledgerCount.textContent = `[CLICK TO EXPAND // ${displayScores.length} ENTRIES READY]`;
         }
 
         if (statusEl) {
-          const absentTargets = Array.from(targetSet).filter(targetWord => !(globalWordCounts[targetWord] > 0));
-          const absentNote = (currentScanMode === "directed" && absentTargets.length > 0)
-            ? ` · [${absentTargets.length} absent target word(s) excluded from results: ${absentTargets.join(', ')}]`
-            : '';
-          if (currentScanMode === "directed") {
+          if (targetWordsActive) {
+            const absentTargets = Array.from(targetSet).filter(targetWord => !(globalWordCounts[targetWord] > 0));
+            const absentNote = absentTargets.length > 0
+              ? ` · [${absentTargets.length} absent target word(s) excluded from results: ${absentTargets.join(', ')}]`
+              : '';
             statusEl.textContent = `✓ Directed scan complete: Steered ${newClusters.length} centroid clusters around seen target keywords · Filtered ${exemptFilteredCount.toLocaleString()} exempt stopwords · ${documents.length} sources analyzed${absentNote}.`;
           } else {
-            statusEl.textContent = `✓ General scan complete: Unbiased clustering across ${documents.length} sources · Filtered ${exemptFilteredCount.toLocaleString()} exempt stopwords · Generated ${newClusters.length} natural centroid clusters.`;
+            statusEl.textContent = `✓ General scan complete: Natural top words discovered · Displaying top 5 dominant centroids on graph · Filtered ${exemptFilteredCount.toLocaleString()} exempt stopwords · Analyzed ${documents.length} sources · Target words bypassed.`;
           }
         }
-        showCentroidToast(`Scan complete: ${newClusters.length} clusters generated from ${documents.length} sources.`);
+        showCentroidToast(`Scan complete: ${currentClusters.length} clusters active from ${documents.length} sources.`);
       } catch (err) {
         console.error("Word scanner error:", err);
         if (statusEl) statusEl.textContent = `Scan error: ${err.message}. Check console or URL syntax.`;
@@ -11192,8 +11398,11 @@
           return;
         }
 
+        const visibleClusterIds = new Set(currentClusters.map(c => String(c.id).padStart(2, "0")));
         window.DRIFT_DATA.trajectories.forEach(traj => {
-          const isActive = (traj.cluster_id === activeClusterId);
+          const tid = String(traj.cluster_id).padStart(2, "0");
+          if (!visibleClusterIds.has(tid)) return;
+          const isActive = (tid === String(activeClusterId).padStart(2, "0"));
 
           const x0 = mapValue(traj.origin.x, VEL_MIN, VEL_MAX, X_MIN_PLOT, X_MAX_PLOT);
           const y0 = mapValue(traj.origin.y, DENS_MIN, DENS_MAX, Y_MIN_PLOT, Y_MAX_PLOT);
@@ -11453,9 +11662,9 @@
       setupEntityFilterTabs();
       setupImmediateActions();
       const initialScores = (window.INITIAL_WORD_SCORES && window.INITIAL_WORD_SCORES.length > 0) ? window.INITIAL_WORD_SCORES : getDefaultEntities();
-      updateImmediateMetrics(15862, 7704, initialScores, new Set(DEFAULT_TARGET_WORDS));
-      renderPoints();
-      updateReadout(activeClusterId);
+      cachedWordScores = initialScores;
+      // Default to OFF (General Discovery Mode): Top 5 clusters on graph, general metrics, target words optional
+      setScanMode("off");
 
     })();
   </script>

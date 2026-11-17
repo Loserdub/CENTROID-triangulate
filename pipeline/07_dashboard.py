@@ -39,9 +39,9 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 try:
-    from pipeline.common import load_ranked_words_from_csv, load_wordlist, safe_json_dumps
+    from pipeline.common import atomic_write_text, compute_cluster_2d_coordinates, load_ranked_words_from_csv, load_wordlist, safe_json_dumps
 except ImportError:
-    from common import load_ranked_words_from_csv, load_wordlist, safe_json_dumps
+    from common import atomic_write_text, compute_cluster_2d_coordinates, load_ranked_words_from_csv, load_wordlist, safe_json_dumps
 
 # Default file paths
 DEFAULT_TEMPLATE_FILE = BASE_DIR / "outputs" / "dashboard_template.html"
@@ -221,11 +221,16 @@ def generate_cluster_dataset(clusters_raw: Dict[str, Any]) -> Tuple[List[Dict[st
     cluster_list: List[Dict[str, Any]] = []
     cluster_id_map: Dict[str, str] = {}
 
+    # Compute non-overlapping 2D coordinates across vector manifold
+    clusters_dict_map = {str(cid): cdata for cid, cdata in sorted_cluster_entries}
+    coord_map = compute_cluster_2d_coordinates(clusters_dict_map, min_dist=0.14)
+
     for idx, (cid, cdata) in enumerate(sorted_cluster_entries, start=1):
         formatted_id = f"{idx:02d}"
         cluster_id_map[str(cid)] = formatted_id
         label = cdata.get("label", f"cluster_{idx}")
-        centroid = label
+        medoid = cdata.get("medoid", label)
+        centroid = medoid
         words = cdata.get("words", [])
         count = cdata.get("total_count", 0)
         pct_share = cdata.get("pct_share", 0.0)
@@ -234,13 +239,8 @@ def generate_cluster_dataset(clusters_raw: Dict[str, Any]) -> Tuple[List[Dict[st
         t = (idx - 1) / max(1, k - 1) if k > 1 else 0.0
         norm_count = (count - min_count) / (max_count - min_count) if max_count > min_count else (1.0 - t)
 
-        # Velocity in [0.20, 0.90] (within [0.15, 0.95] domain)
-        # Alternate staggered offset to avoid overlap on scatter chart
-        stagger = 0.04 if idx % 2 == 1 else -0.04
-        velocity = round(min(0.92, max(0.20, 0.88 - t * 0.65 + stagger)), 2)
-
-        # Semantic Density in [0.50, 0.86] (within [0.45, 0.90] domain)
-        density = round(min(0.880, max(0.480, 0.850 - t * 0.340)), 3)
+        # Non-overlapping velocity and density from vector manifold
+        velocity, density = coord_map.get(str(cid), (0.50, 0.68))
 
         # Strength (30 - 90)
         strength = int(round(min(90, max(32, 38 + norm_count * 50))))
@@ -248,7 +248,11 @@ def generate_cluster_dataset(clusters_raw: Dict[str, Any]) -> Tuple[List[Dict[st
         cluster_list.append({
             "id": formatted_id,
             "label": label,
+            "medoid": medoid,
             "centroid": centroid,
+            "dispersionRadius": cdata.get("dispersion_radius", 0.0),
+            "isTargetCluster": cdata.get("is_target_cluster", False),
+            "targetSeed": cdata.get("target_seed", None),
             "velocity": velocity,
             "density": density,
             "strength": strength,
@@ -341,9 +345,19 @@ def build_gap_analysis_html(gaps: List[Dict[str, Any]], target_words: List[str])
 
     gap_block = (
         f'      <div class="gap-analysis-section" style="padding: 16px 18px; background-color: #14181C; border-top: 1px solid var(--hairline); font-family: var(--font-mono); font-size: 11px;">\n'
-        f'        <div style="font-weight: 600; color: var(--accent-brass); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">\n'
+        f'        <div style="font-weight: 600; color: var(--accent-brass); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">\n'
         f'          <span>// GAP ANALYSIS: TARGET WORDS COVERAGE</span>\n'
-        f'          <span style="color: var(--text-secondary); font-size: 10px;">[{len(gaps)} GAPS DETECTED / {len(target_words)} TARGET WORDS]</span>\n'
+        f'          <div style="display: flex; align-items: center; gap: 8px;">\n'
+        f'            <button type="button" class="btn-llm-primer" id="btn-copy-llm-primer" title="Generate and copy an optimized prompt for ChatGPT/Claude to fill these gaps">⚡ COPY 1-CLICK LLM GAP-FILLER PROMPT</button>\n'
+        f'            <span style="color: var(--text-secondary); font-size: 10px;">[{len(gaps)} GAPS DETECTED / {len(target_words)} TARGET WORDS]</span>\n'
+        f'          </div>\n'
+        f'        </div>\n'
+        f'        <div class="llm-primer-drawer" id="llm-primer-drawer">\n'
+        f'          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">\n'
+        f'            <span style="font-family: var(--font-mono); font-size: 10px; color: var(--accent-brass);">PROMPT READY FOR CHATGPT / CLAUDE:</span>\n'
+        f'            <button type="button" class="btn-micro" id="btn-close-llm-primer">Close</button>\n'
+        f'          </div>\n'
+        f'          <textarea class="llm-primer-textarea" id="llm-primer-textarea" readonly></textarea>\n'
         f'        </div>\n'
         f'        <div style="color: var(--text-secondary); margin-bottom: 10px; font-size: 11px;">\n'
         f'          Cross-referenced against <code>wordlists/target_words.txt</code> (words absent or in the bottom third of corpus frequency):\n'
@@ -431,7 +445,7 @@ def generate_dashboard(
                 if clean_line and not clean_line.startswith("#"):
                     input_urls.append(clean_line)
 
-    sources_count = len(input_urls) if input_urls else 5
+    sources_count = len(input_urls)
 
     html_content = re.sub(
         r'<span class="chip-val" id="header-corpus-count">.*?</span>',
@@ -509,12 +523,92 @@ def generate_dashboard(
         except Exception as de:
             logger.warning(f"Failed to load drift analysis: {de}")
 
+    medoids_data = None
+    medoids_file = BASE_DIR / "outputs" / "medoids.json"
+    if medoids_file.exists():
+        try:
+            with open(medoids_file, "r", encoding="utf-8") as mf:
+                medoids_data = json.load(mf)
+        except Exception as me:
+            logger.warning(f"Failed to load medoids: {me}")
+
+    super_centroids_data = None
+    sc_file = BASE_DIR / "outputs" / "super_centroids.json"
+    if sc_file.exists():
+        try:
+            with open(sc_file, "r", encoding="utf-8") as sf:
+                super_centroids_data = json.load(sf)
+        except Exception as se:
+            logger.warning(f"Failed to load super centroids: {se}")
+
+    timeline_data = None
+    tl_file = BASE_DIR / "outputs" / "timeline_index.json"
+    if tl_file.exists():
+        try:
+            with open(tl_file, "r", encoding="utf-8") as tf:
+                timeline_data = json.load(tf)
+        except Exception as te:
+            logger.warning(f"Failed to load timeline index: {te}")
+
+    market_benchmark_data = None
+    mb_file = BASE_DIR / "outputs" / "market_benchmark.json"
+    if mb_file.exists():
+        try:
+            with open(mb_file, "r", encoding="utf-8") as mf:
+                market_benchmark_data = json.load(mf)
+        except Exception as me:
+            logger.warning(f"Failed to load market benchmark: {me}")
+
+    trend_forecast_data = None
+    tf_file = BASE_DIR / "outputs" / "trend_forecast.json"
+    if tf_file.exists():
+        try:
+            with open(tf_file, "r", encoding="utf-8") as tff:
+                trend_forecast_data = json.load(tff)
+        except Exception as tfe:
+            logger.warning(f"Failed to load trend forecast: {tfe}")
+
+    collocations_data = None
+    col_file = BASE_DIR / "outputs" / "collocations.json"
+    if col_file.exists():
+        try:
+            with open(col_file, "r", encoding="utf-8") as cf:
+                collocations_data = json.load(cf)
+        except Exception as cfe:
+            logger.warning(f"Failed to load collocations: {cfe}")
+
+    graph_community_data = None
+    graph_file = BASE_DIR / "outputs" / "cooccurrence_graph.json"
+    if graph_file.exists():
+        try:
+            with open(graph_file, "r", encoding="utf-8") as gf:
+                graph_community_data = json.load(gf)
+        except Exception as gfe:
+            logger.warning(f"Failed to load cooccurrence graph: {gfe}")
+
+    burst_data = None
+    burst_file = BASE_DIR / "outputs" / "burst_analysis.json"
+    if burst_file.exists():
+        try:
+            with open(burst_file, "r", encoding="utf-8") as bf:
+                burst_data = json.load(bf)
+        except Exception as bfe:
+            logger.warning(f"Failed to load burst analysis: {bfe}")
+
     data_payload_injection = (
         f"window.CLEANED_CORPUS_TEXT = {safe_json_dumps(clean_corpus_text)};\n"
         f"      window.STRUCTURED_CSV_DATA = {safe_json_dumps(structured_csv_payload)};\n"
         f"      window.INITIAL_WORD_SCORES = {safe_json_dumps(ranked_words)};\n"
         f"      window.CORPUS_DOCUMENTS = {safe_json_dumps(corpus_docs)};\n"
         f"      window.DRIFT_DATA = {safe_json_dumps(drift_data)};\n"
+        f"      window.MEDOIDS_DATA = {safe_json_dumps(medoids_data)};\n"
+        f"      window.SUPER_CENTROIDS_DATA = {safe_json_dumps(super_centroids_data)};\n"
+        f"      window.TIMELINE_INDEX = {safe_json_dumps(timeline_data)};\n"
+        f"      window.MARKET_BENCHMARK_DATA = {safe_json_dumps(market_benchmark_data)};\n"
+        f"      window.TREND_FORECAST_DATA = {safe_json_dumps(trend_forecast_data)};\n"
+        f"      window.COLLOCATIONS_DATA = {safe_json_dumps(collocations_data)};\n"
+        f"      window.GRAPH_COMMUNITY_DATA = {safe_json_dumps(graph_community_data)};\n"
+        f"      window.BURST_ANALYSIS_DATA = {safe_json_dumps(burst_data)};\n"
     )
     mount_target = "// Initialize Workbench & Mount"
     if mount_target in html_content:
@@ -584,17 +678,15 @@ def generate_dashboard(
     else:
         html_content = existing_gap_pattern.sub("", html_content, count=1)
 
-    # 7. Write to outputs/dashboard.html
+    # 7. Write to outputs/dashboard.html atomically
     out_file.parent.mkdir(parents=True, exist_ok=True)
-    with open(out_file, mode="w", encoding="utf-8") as f:
-        f.write(html_content)
+    atomic_write_text(out_file, html_content)
 
     # Also synchronize root dashboard.html for GitHub Pages / static hosting
     root_dashboard = BASE_DIR / "dashboard.html"
     if out_file.resolve() != root_dashboard.resolve():
         try:
-            with open(root_dashboard, mode="w", encoding="utf-8") as rf:
-                rf.write(html_content)
+            atomic_write_text(root_dashboard, html_content)
             logger.info(f"Synchronized root dashboard at: '{root_dashboard}'")
         except Exception as e:
             logger.warning(f"Failed to synchronize root dashboard: {e}")

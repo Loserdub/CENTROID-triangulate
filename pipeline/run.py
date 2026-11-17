@@ -55,6 +55,9 @@ from typing import Any, Dict, List, Optional, Tuple
 BASE_DIR = Path(__file__).resolve().parent.parent
 PIPELINE_DIR = BASE_DIR / "pipeline"
 
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
 # Pipeline stage script paths
 SCRIPT_00_STATE = PIPELINE_DIR / "00_state.py"
 SCRIPT_01_FETCH = PIPELINE_DIR / "01_fetch.py"
@@ -222,7 +225,11 @@ def run_isolated_stage(
     dashboard: bool = False,
     lang: str = "en",
     force: bool = True,
-    min_words: int = 50
+    min_words: int = 50,
+    cluster_seed: Optional[str] = None,
+    recency_decay: bool = True,
+    decay_factor: float = 0.85,
+    momentum_weight: float = 0.15
 ) -> bool:
     """
     Executes exactly one named stage in isolation using existing outputs/.
@@ -298,9 +305,11 @@ def run_isolated_stage(
             print("  Run '03_scan_words' first to generate word_freq_raw.csv.\n")
             return False
         cluster_args = ["--top", str(top_n), "--clusters", str(clusters_k)]
+        if cluster_seed:
+            cluster_args.extend(["--cluster-seed", str(cluster_seed)])
         success = execute_stage_with_checkpoint(
-            "05_cluster", SCRIPT_05_CLUSTER, cluster_args, "Stage 04 (Rank + Cluster)",
-            state_mgr, force=force, params={"top": top_n, "clusters": clusters_k}
+            "05_cluster", SCRIPT_05_CLUSTER, cluster_args, "Stage 04 (Establish Medoids & Cluster)",
+            state_mgr, force=force, params={"top": top_n, "clusters": clusters_k, "cluster_seed": cluster_seed}
         )
 
     elif canonical_name == "06_report":
@@ -334,8 +343,11 @@ def run_isolated_stage(
             print(f"\n[ERROR] Prerequisite clusters JSON '{PATH_CLUSTERS_JSON}' is missing.")
             print("  Run '05_cluster' first to generate cluster vectors.\n")
             return False
+        drift_args = ["--decay-factor", str(decay_factor), "--momentum-weight", str(momentum_weight)]
+        if not recency_decay:
+            drift_args.append("--no-recency-decay")
         success = execute_stage_with_checkpoint(
-            "08_drift", SCRIPT_08_DRIFT, [], "Stage 08 (Semantic Drift Tracking)",
+            "08_drift", SCRIPT_08_DRIFT, drift_args, "Stage 08 (Super Centroid Delivery & Drift)",
             state_mgr, force=force
         )
 
@@ -361,7 +373,11 @@ def run_pipeline(
     single_stage: Optional[str] = None,
     min_words: int = 50,
     snapshot: Optional[str] = None,
-    drift: bool = False
+    drift: bool = False,
+    cluster_seed: Optional[str] = None,
+    recency_decay: bool = True,
+    decay_factor: float = 0.85,
+    momentum_weight: float = 0.15
 ) -> bool:
     """
     Main orchestration routine for running the CENTROID pipeline stages with state management.
@@ -380,7 +396,11 @@ def run_pipeline(
             dashboard=dashboard,
             lang=lang,
             force=force,
-            min_words=min_words
+            min_words=min_words,
+            cluster_seed=cluster_seed,
+            recency_decay=recency_decay,
+            decay_factor=decay_factor,
+            momentum_weight=momentum_weight
         )
 
     state_mgr = StateManagerClass(state_file=PATH_RUN_STATE, base_dir=BASE_DIR) if StateManagerClass else None
@@ -528,24 +548,26 @@ def run_pipeline(
             state_mgr.record_stage_skipped("04_web_expand", reason="Web expansion not enabled (--web-expand flag not passed)")
 
     # -------------------------------------------------------------
-    # STAGE 04: RANK + CLUSTER (05_cluster.py)
+    # STAGE 04: ESTABLISH MEDOIDS & CLUSTER (05_cluster.py)
     # -------------------------------------------------------------
-    logger.info("\n>>> STAGE 04: RANK & CLUSTER (Word2Vec + KMeans Centroids)")
+    logger.info("\n>>> STAGE 04: ESTABLISH MEDOIDS & CLUSTER (Word2Vec + Plan B Pairwise Dissimilarity)")
     cluster_args = [
         "--top", str(top_n),
         "--clusters", str(clusters_k)
     ]
+    if cluster_seed:
+        cluster_args.extend(["--cluster-seed", str(cluster_seed)])
     if snapshot is not None:
         if snapshot:
             cluster_args.extend(["--snapshot", str(snapshot)])
         else:
             cluster_args.append("--snapshot")
-    cluster_params = {"top": top_n, "clusters": clusters_k, "snapshot": snapshot}
+    cluster_params = {"top": top_n, "clusters": clusters_k, "snapshot": snapshot, "cluster_seed": cluster_seed}
     if not execute_stage_with_checkpoint(
-        "05_cluster", SCRIPT_05_CLUSTER, cluster_args, "Stage 04 (Rank + Cluster)",
+        "05_cluster", SCRIPT_05_CLUSTER, cluster_args, "Stage 04 (Establish Medoids & Cluster)",
         state_mgr, force=force, params=cluster_params
     ):
-        logger.error("Stage 04 (Rank + Cluster) failed. Halting pipeline.")
+        logger.error("Stage 04 (Establish Medoids & Cluster) failed. Halting pipeline.")
         total_elapsed = time.time() - GLOBAL_TRACKER["start_time"]
         print("=" * 78)
         print(f"Total elapsed time: {total_elapsed:.2f}s | Verdict: degraded")
@@ -570,18 +592,20 @@ def run_pipeline(
         return False
 
     # -------------------------------------------------------------
-    # STAGE 08: SEMANTIC DRIFT TRACKING (08_drift.py)
+    # STAGE 08: SUPER CENTROID DELIVERY & TRAJECTORY KINEMATICS (08_drift.py)
     # -------------------------------------------------------------
     if drift or dashboard:
-        logger.info("\n>>> STAGE 08: TOPOLOGICAL DRIFT & PREDICTIVE FORECASTING (Procrustes SVD + Kinematics)")
-        drift_args = []
+        logger.info("\n>>> STAGE 08: SUPER CENTROID DELIVERY & TRAJECTORY KINEMATICS")
+        drift_args = ["--decay-factor", str(decay_factor), "--momentum-weight", str(momentum_weight)]
+        if not recency_decay:
+            drift_args.append("--no-recency-decay")
         execute_stage_with_checkpoint(
-            "08_drift", SCRIPT_08_DRIFT, drift_args, "Stage 08 (Semantic Drift Tracking)",
+            "08_drift", SCRIPT_08_DRIFT, drift_args, "Stage 08 (Super Centroid Delivery & Drift)",
             state_mgr, force=force
         )
     else:
         if state_mgr:
-            state_mgr.record_stage_skipped("08_drift", reason="Drift analysis not requested (--drift flag not passed)")
+            state_mgr.record_stage_skipped("08_drift", reason="Drift / Super Centroid analysis not requested (--drift flag not passed)")
 
     # -------------------------------------------------------------
     # STAGE 07: INTERACTIVE DASHBOARD (Optional: 07_dashboard.py)
@@ -703,11 +727,74 @@ def parse_arguments() -> argparse.Namespace:
         default=False,
         help="Run cross-temporal Orthogonal Procrustes semantic drift analysis and trajectory forecast."
     )
+    parser.add_argument(
+        "--cluster-seed", "--target-cluster",
+        dest="cluster_seed",
+        type=str,
+        default=None,
+        help="Specific cluster focus or target word seed to study (e.g. 'deepfakes')."
+    )
+    parser.add_argument(
+        "--recency-decay",
+        dest="recency_decay",
+        action="store_true",
+        default=True,
+        help="Enable exponential recency decay weighting for historical medoids (default: True)."
+    )
+    parser.add_argument(
+        "--no-recency-decay",
+        dest="recency_decay",
+        action="store_false",
+        help="Disable recency decay and use uniform averaging across snapshots."
+    )
+    parser.add_argument(
+        "--decay-factor",
+        type=float,
+        default=0.85,
+        help="Decay factor gamma for recency weighting (default: 0.85)."
+    )
+    parser.add_argument(
+        "--momentum-weight",
+        type=float,
+        default=0.15,
+        help="Momentum factor lambda for velocity vector in Super Centroid synthesis (default: 0.15)."
+    )
+    parser.add_argument(
+        "--gui",
+        action="store_true",
+        help="Launch the interactive CENTROID GUI server and open dashboard.html in your web browser."
+    )
+    parser.add_argument(
+        "--gui-port",
+        type=int,
+        default=8000,
+        help="Local port binding for the GUI server (default: 8000)."
+    )
+    parser.add_argument(
+        "--no-browser",
+        action="store_true",
+        help="Do not open the browser automatically when starting the GUI server."
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_arguments()
+    if args.gui:
+        try:
+            from pipeline.gui_server import start_gui_server
+        except ImportError:
+            from gui_server import start_gui_server
+        try:
+            start_gui_server(port=args.gui_port, open_browser=not args.no_browser)
+            sys.exit(0)
+        except KeyboardInterrupt:
+            print("\n[CENTROID] GUI server stopped by user.")
+            sys.exit(0)
+        except Exception as e:
+            logger.error(f"GUI server error: {e}", exc_info=True)
+            sys.exit(1)
+
     try:
         success = run_pipeline(
             top_n=args.top,
@@ -721,7 +808,11 @@ def main():
             single_stage=args.stage,
             min_words=args.min_words,
             snapshot=args.snapshot,
-            drift=args.drift
+            drift=args.drift,
+            cluster_seed=args.cluster_seed,
+            recency_decay=args.recency_decay,
+            decay_factor=args.decay_factor,
+            momentum_weight=args.momentum_weight
         )
         sys.exit(0 if success else 1)
     except KeyboardInterrupt:

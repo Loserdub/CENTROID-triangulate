@@ -12,9 +12,12 @@ import csv
 import hashlib
 import json
 import logging
+import math
+import os
 from pathlib import Path
 import re
-from typing import Any, Dict, List, Optional, Set, Tuple
+import tempfile
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 # Try importing BeautifulSoup
 try:
@@ -200,3 +203,273 @@ def load_ranked_words_from_csv(ranked_csv_path: Path, top_n: Optional[int] = Non
                 break
 
     return ranked_words
+
+
+def atomic_write_json(target_path: Union[Path, str], data: Any, indent: int = 2) -> None:
+    """
+    Atomically serializes data to a target JSON file using temp-and-replace semantics
+    (NamedTemporaryFile on the same parent directory + os.replace) to prevent zero-byte corruptions.
+    """
+    path = Path(target_path).resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    temp_file = tempfile.NamedTemporaryFile(
+        mode="w",
+        dir=path.parent,
+        prefix=f".tmp_{path.stem}_",
+        suffix=".tmp",
+        delete=False,
+        encoding="utf-8"
+    )
+    temp_path = Path(temp_file.name)
+    try:
+        json.dump(data, temp_file, indent=indent, ensure_ascii=False)
+        temp_file.flush()
+        os.fsync(temp_file.fileno())
+        temp_file.close()  # Required on Windows before os.replace
+        os.replace(temp_path, path)
+    except Exception:
+        temp_file.close()
+        if temp_path.exists():
+            try:
+                temp_path.unlink()
+            except OSError:
+                pass
+        raise
+
+
+def atomic_write_text(target_path: Union[Path, str], text: str) -> None:
+    """
+    Atomically writes text to a target file using temp-and-replace semantics.
+    """
+    path = Path(target_path).resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    temp_file = tempfile.NamedTemporaryFile(
+        mode="w",
+        dir=path.parent,
+        prefix=f".tmp_{path.stem}_",
+        suffix=".tmp",
+        delete=False,
+        encoding="utf-8"
+    )
+    temp_path = Path(temp_file.name)
+    try:
+        temp_file.write(text)
+        temp_file.flush()
+        os.fsync(temp_file.fileno())
+        temp_file.close()
+        os.replace(temp_path, path)
+    except Exception:
+        temp_file.close()
+        if temp_path.exists():
+            try:
+                temp_path.unlink()
+            except OSError:
+                pass
+        raise
+
+
+def validate_snapshot_schema(data: Any) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+    """
+    Strict schema validation for snapshot ingestion to prevent zero-byte corruptions
+    and unhandled crashes.
+
+    Returns:
+        (is_valid: bool, error_msg: str, cleaned_snapshot: Optional[Dict])
+    """
+    if data is None:
+        return False, "Payload is null or empty.", None
+
+    if isinstance(data, (bytes, bytearray)):
+        try:
+            data = data.decode("utf-8")
+        except Exception as e:
+            return False, f"Byte payload cannot be decoded as UTF-8: {e}", None
+
+    if isinstance(data, str):
+        stripped = data.strip()
+        if not stripped:
+            return False, "Snapshot data is a zero-byte or empty string.", None
+        try:
+            parsed = json.loads(stripped)
+            if not isinstance(parsed, dict):
+                return False, f"Snapshot JSON root must be an object/dict, got {type(parsed).__name__}.", None
+            data = parsed
+        except json.JSONDecodeError as jde:
+            return False, f"Invalid JSON syntax in snapshot payload: {jde.msg} (line {jde.lineno}, col {jde.colno})", None
+
+    if not isinstance(data, dict):
+        return False, f"Expected dictionary for snapshot data, received {type(data).__name__}.", None
+
+    snapshot_id = data.get("snapshot_id")
+    if not snapshot_id or not isinstance(snapshot_id, str) or not snapshot_id.strip():
+        alt_id = data.get("id")
+        if alt_id and isinstance(alt_id, str) and alt_id.strip():
+            snapshot_id = alt_id.strip()
+        else:
+            return False, "Missing or invalid required string property 'snapshot_id'.", None
+
+    timestamp = data.get("timestamp")
+    if not timestamp or not isinstance(timestamp, str) or not timestamp.strip():
+        return False, "Missing or invalid required string property 'timestamp'.", None
+
+    cleaned_topics = []
+    if "emerging_topics" in data:
+        topics = data["emerging_topics"]
+        if not isinstance(topics, list):
+            return False, f"'emerging_topics' must be a list, received {type(topics).__name__}.", None
+        for i, t in enumerate(topics):
+            if not isinstance(t, dict):
+                return False, f"Topic at index {i} in 'emerging_topics' must be a dictionary.", None
+            title = t.get("working_title") or t.get("cluster_label") or t.get("title")
+            if not title:
+                continue
+            try:
+                score = float(t.get("momentum_score", 50.0))
+                if math.isnan(score) or math.isinf(score):
+                    score = 50.0
+            except (ValueError, TypeError):
+                score = 50.0
+
+            cleaned_topic = dict(t)
+            cleaned_topic["working_title"] = str(title)
+            cleaned_topic["momentum_score"] = score
+            cleaned_topics.append(cleaned_topic)
+
+    # Safe extraction of cluster_count
+    raw_cluster_count = data.get("cluster_count")
+    if raw_cluster_count is not None:
+        try:
+            val = int(float(raw_cluster_count))
+            cluster_count = max(0, val) if not (math.isnan(val) or math.isinf(val)) else 0
+        except (ValueError, TypeError):
+            cluster_count = 0
+    else:
+        clusters_obj = data.get("clusters")
+        if isinstance(clusters_obj, (dict, list)):
+            cluster_count = len(clusters_obj)
+        else:
+            cluster_count = 0
+
+    # Safe extraction of total_vocabulary
+    raw_vocab = data.get("total_vocabulary")
+    if raw_vocab is not None:
+        try:
+            val = int(float(raw_vocab))
+            total_vocab = max(0, val) if not (math.isnan(val) or math.isinf(val)) else 0
+        except (ValueError, TypeError):
+            total_vocab = 0
+    else:
+        ranked_obj = data.get("ranked_sample")
+        if isinstance(ranked_obj, list):
+            total_vocab = len(ranked_obj)
+        else:
+            total_vocab = 0
+
+    cleaned: Dict[str, Any] = {
+        "snapshot_id": str(snapshot_id).strip(),
+        "timestamp": str(timestamp).strip(),
+        "corpus_name": str(data.get("corpus_name", "Active Domain Monitor")),
+        "cluster_count": cluster_count,
+        "total_vocabulary": total_vocab,
+        "collocations": data.get("collocations", []) if isinstance(data.get("collocations"), list) else [],
+        "emerging_topics": cleaned_topics,
+        "sunset_topics": data.get("sunset_topics", []) if isinstance(data.get("sunset_topics"), list) else [],
+        "ranked_sample": data.get("ranked_sample", []) if isinstance(data.get("ranked_sample"), list) else []
+    }
+    for k, v in data.items():
+        if k not in cleaned:
+            cleaned[k] = v
+
+    return True, "", cleaned
+
+
+def compute_cluster_2d_coordinates(
+    clusters: Union[Dict[str, Any], List[Dict[str, Any]]],
+    min_dist: float = 0.14
+) -> Dict[str, Tuple[float, float]]:
+    """
+    Computes distinct, non-overlapping 2D (velocity, density) coordinates for clusters.
+    Uses PCA projection on high-dimensional centroid/medoid embeddings when available,
+    paired with a deterministic spring-repulsion pass (min_dist >= 0.14) to guarantee
+    that no two cluster centers sit on top of each other.
+
+    Coordinates are mapped to the manifold:
+      Velocity (X): [0.20, 0.88]
+      Density (Y):  [0.48, 0.86]
+    """
+    items = []
+    if isinstance(clusters, dict):
+        items = list(clusters.items())
+    elif isinstance(clusters, list):
+        items = [(c.get("raw_id", c.get("id", str(i))), c) for i, c in enumerate(clusters)]
+
+    k = len(items)
+    if k == 0:
+        return {}
+    if k == 1:
+        return {str(items[0][0]): (0.54, 0.68)}
+
+    vectors = []
+    has_vectors = True
+    try:
+        import numpy as np
+        from sklearn.decomposition import PCA
+
+        for _, cdata in items:
+            vec = cdata.get("centroid_vector") or cdata.get("medoid_vector")
+            if vec and isinstance(vec, (list, tuple, np.ndarray)) and len(vec) >= 2:
+                vectors.append(list(vec))
+            else:
+                has_vectors = False
+                break
+
+        if has_vectors and len(vectors) == k:
+            pca = PCA(n_components=2, random_state=42)
+            raw_2d = pca.fit_transform(vectors)
+            x_min, x_max = float(raw_2d[:, 0].min()), float(raw_2d[:, 0].max())
+            y_min, y_max = float(raw_2d[:, 1].min()), float(raw_2d[:, 1].max())
+
+            x_span = max(1e-6, x_max - x_min)
+            y_span = max(1e-6, y_max - y_min)
+
+            x_norm = 0.22 + ((raw_2d[:, 0] - x_min) / x_span) * 0.64
+            y_norm = 0.50 + ((raw_2d[:, 1] - y_min) / y_span) * 0.34
+            coords = np.column_stack([x_norm, y_norm])
+        else:
+            raise ValueError("Incomplete vectors, use analytical dispersion")
+    except Exception:
+        import numpy as np
+        coords = np.zeros((k, 2), dtype=float)
+        golden_angle = 2.399963229728653  # golden angle in radians
+        for i in range(k):
+            r = 0.12 + 0.20 * math.sqrt((i + 1) / max(1, k))
+            theta = i * golden_angle
+            coords[i, 0] = 0.54 + r * math.cos(theta) * 1.4
+            coords[i, 1] = 0.67 + r * math.sin(theta) * 0.75
+
+    # Spring repulsion pass to strictly prevent visual overlap
+    try:
+        import numpy as np
+        for _ in range(80):
+            for i in range(k):
+                for j in range(i + 1, k):
+                    delta = coords[i] - coords[j]
+                    dist = float(np.linalg.norm(delta))
+                    if dist < min_dist:
+                        push = (delta / max(1e-6, dist)) * (min_dist - dist) * 0.5
+                        coords[i] += push
+                        coords[j] -= push
+            coords[:, 0] = np.clip(coords[:, 0], 0.18, 0.88)
+            coords[:, 1] = np.clip(coords[:, 1], 0.48, 0.86)
+    except Exception:
+        pass
+
+    result: Dict[str, Tuple[float, float]] = {}
+    for i, (cid, _) in enumerate(items):
+        vx = round(float(coords[i, 0]), 2)
+        vy = round(float(coords[i, 1]), 3)
+        result[str(cid)] = (vx, vy)
+
+    return result

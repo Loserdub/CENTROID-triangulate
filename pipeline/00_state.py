@@ -90,17 +90,19 @@ STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     },
     "05_cluster": {
         "script": "05_cluster.py",
-        "display_name": "Stage 04 (Rank + Cluster)",
+        "display_name": "Stage 04 (Establish Medoids & Cluster)",
         "inputs": [
             "outputs/word_freq_raw.csv",
             "outputs/corpus.txt",
+            "wordlists/target_words.txt",
             "pipeline/05_cluster.py"
         ],
         "outputs": [
             "outputs/word_freq_ranked.csv",
-            "outputs/clusters.json"
+            "outputs/clusters.json",
+            "outputs/medoids.json"
         ],
-        "aliases": ["05", "05_cluster", "cluster", "clustering", "kmeans", "rank_cluster"]
+        "aliases": ["05", "05_cluster", "cluster", "clustering", "kmeans", "rank_cluster", "medoid", "medoids", "stage1", "stage_1"]
     },
     "06_report": {
         "script": "06_report.py",
@@ -108,6 +110,7 @@ STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
         "inputs": [
             "outputs/word_freq_ranked.csv",
             "outputs/clusters.json",
+            "outputs/medoids.json",
             "outputs/word_freq_raw.csv",
             "wordlists/target_words.txt",
             "pipeline/06_report.py"
@@ -121,6 +124,7 @@ STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
         "inputs": [
             "outputs/word_freq_ranked.csv",
             "outputs/clusters.json",
+            "outputs/medoids.json",
             "outputs/dashboard_template.html",
             "pipeline/07_dashboard.py"
         ],
@@ -129,14 +133,18 @@ STAGE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     },
     "08_drift": {
         "script": "08_drift.py",
-        "display_name": "Stage 08 (Semantic Drift Tracking)",
+        "display_name": "Stage 08 (Super Centroid Delivery & Drift)",
         "inputs": [
             "outputs/clusters.json",
+            "outputs/medoids.json",
             "outputs/timeline_index.json",
             "pipeline/08_drift.py"
         ],
-        "outputs": ["outputs/drift_analysis.json"],
-        "aliases": ["08", "08_drift", "drift", "procrustes", "trajectory", "forecast"]
+        "outputs": [
+            "outputs/drift_analysis.json",
+            "outputs/super_centroids.json"
+        ],
+        "aliases": ["08", "08_drift", "drift", "procrustes", "trajectory", "forecast", "super_centroid", "super-centroid", "supercentroid", "stage2", "stage_2"]
     }
 }
 

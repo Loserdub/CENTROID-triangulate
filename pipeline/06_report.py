@@ -47,6 +47,8 @@ except ImportError:
 # Default file paths
 DEFAULT_RANKED_CSV = BASE_DIR / "outputs" / "word_freq_ranked.csv"
 DEFAULT_CLUSTERS_JSON = BASE_DIR / "outputs" / "clusters.json"
+DEFAULT_MEDOIDS_JSON = BASE_DIR / "outputs" / "medoids.json"
+DEFAULT_SUPER_CENTROIDS_JSON = BASE_DIR / "outputs" / "super_centroids.json"
 DEFAULT_RAW_CSV = BASE_DIR / "outputs" / "word_freq_raw.csv"
 DEFAULT_CORPUS_FILE = BASE_DIR / "outputs" / "corpus.txt"
 DEFAULT_TARGET_WORDS_FILE = BASE_DIR / "wordlists" / "target_words.txt"
@@ -263,7 +265,8 @@ def build_markdown_report(
     clusters_data: Dict[str, Any],
     gap_analysis_results: List[Dict[str, Any]],
     target_words_present: bool,
-    top_n: int = 1000
+    top_n: int = 1000,
+    super_centroids_data: Optional[Dict[str, Any]] = None
 ) -> str:
     """
     Constructs the exact Markdown report conforming to AGENT.md section 6 skeleton:
@@ -308,8 +311,8 @@ def build_markdown_report(
 
     lines.append("")
 
-    # 3. Centroid Clusters (Top 20 words each)
-    lines.append("## Centroid Clusters")
+    # 3. Established Medoids & Clusters
+    lines.append("## Centroid Clusters (Established Medoids)")
 
     # Sort clusters by total count descending
     sorted_cluster_entries = sorted(
@@ -323,12 +326,17 @@ def build_markdown_report(
     else:
         for idx, (cid, cdata) in enumerate(sorted_cluster_entries, start=1):
             anchor_word = cdata.get("label", f"Cluster {idx}")
+            medoid_word = cdata.get("medoid", anchor_word)
+            dispersion = cdata.get("dispersion_radius")
             words_list = cdata.get("words", [])
             top_20_words = words_list[:20]
             words_str = ", ".join(top_20_words)
 
-            lines.append(f"### Cluster {idx} — \"{anchor_word}\"")
-            lines.append(f"> Top words: {words_str}")
+            target_tag = " `[TARGET]`" if cdata.get("is_target_cluster") else ""
+            lines.append(f"### Cluster {idx} — \"{anchor_word}\"{target_tag}")
+            disp_str = f" | Dispersion Radius: `{dispersion:.4f}`" if dispersion is not None else ""
+            lines.append(f"> **Empirical Medoid**: `{medoid_word}`{disp_str}")
+            lines.append(f"> Top members (proximity-ordered): {words_str}")
             lines.append("")
 
     # 4. Gap Analysis
@@ -368,6 +376,22 @@ def build_markdown_report(
         lines.append(f"| {cluster_name_display} | {cluster_unique_count:,} | {pct_share:.2f}% |")
 
     lines.append("")
+
+    # 6. Stage 2: Super Centroid & Trajectory Projections (if available)
+    if super_centroids_data and super_centroids_data.get("clusters"):
+        lines.append("## Super Centroid & Trajectory Projections")
+        strat = super_centroids_data.get("weighting_strategy", "recency_decay")
+        decay = super_centroids_data.get("decay_factor", 0.85)
+        lines.append(f"> **Weighting Strategy**: `{strat}` (Decay: `{decay}`) | Momentum: `{super_centroids_data.get('momentum_weight', 0.15)}`")
+        lines.append("")
+        lines.append("| Cluster | Current Medoid | Gravitational Shift | Nearest Semantic Anchors | Velocity Mag |")
+        lines.append("|---|---|---|---|---|")
+        for sc_cid, sc in super_centroids_data["clusters"].items():
+            anchors_list = [f"`{a['word']}`" for a in sc.get("nearest_semantic_anchors", [])[:3]]
+            anchors_str = ", ".join(anchors_list) if anchors_list else "-"
+            lines.append(f"| {sc.get('cluster_label', sc_cid)} | `{sc.get('current_medoid', '-')}` | {sc.get('gravitational_shift', 0.0):.4f} | {anchors_str} | {sc.get('velocity_magnitude', 0.0):.4f} |")
+        lines.append("")
+
     return "\n".join(lines)
 
 
@@ -422,7 +446,16 @@ def generate_report(
         total_tokens=total_tokens
     )
 
-    # 4. Generate Markdown report content
+    # 4. Load Super Centroid intelligence if available
+    super_centroids_data = None
+    if DEFAULT_SUPER_CENTROIDS_JSON.exists():
+        try:
+            with open(DEFAULT_SUPER_CENTROIDS_JSON, mode="r", encoding="utf-8") as f:
+                super_centroids_data = json.load(f)
+        except Exception:
+            super_centroids_data = None
+
+    # 5. Generate Markdown report content
     report_content = build_markdown_report(
         report_date_str=today_str,
         sources_count=sources_count,
@@ -432,7 +465,8 @@ def generate_report(
         clusters_data=clusters_data,
         gap_analysis_results=gap_analysis_results,
         target_words_present=len(target_words) > 0,
-        top_n=top_n
+        top_n=top_n,
+        super_centroids_data=super_centroids_data
     )
 
     # 5. Write outputs/REPORT.md

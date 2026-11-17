@@ -28,6 +28,7 @@ Usage:
 
 import argparse
 import csv
+import json
 import logging
 import math
 import os
@@ -54,9 +55,17 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 try:
-    from pipeline.common import load_wordlist as common_load_wordlist, normalize_unicode_punctuation as common_normalize_unicode_punctuation
+    from pipeline.common import (
+        atomic_write_json,
+        load_wordlist as common_load_wordlist,
+        normalize_unicode_punctuation as common_normalize_unicode_punctuation,
+    )
 except ImportError:
-    from common import load_wordlist as common_load_wordlist, normalize_unicode_punctuation as common_normalize_unicode_punctuation
+    from common import (
+        atomic_write_json,
+        load_wordlist as common_load_wordlist,
+        normalize_unicode_punctuation as common_normalize_unicode_punctuation,
+    )
 
 # Default file paths
 DEFAULT_CORPUS_FILE = BASE_DIR / "outputs" / "corpus.txt"
@@ -309,6 +318,142 @@ def compute_tfidf_scores(
     return tfidf_by_doc
 
 
+def extract_collocations(
+    documents: List[Tuple[str, str]],
+    stopwords: Set[str],
+    min_freq: int = 2,
+    top_n: int = 60,
+) -> List[Dict[str, Any]]:
+    """
+    Extracts multi-word collocations (bigrams and trigrams) representing
+    meaningful phrasal concepts across documents using Normalized Pointwise
+    Mutual Information (NPMI) and deterministic C-Value nested phrase extraction.
+    """
+    unigram_counts: Counter = Counter()
+    bigram_counts: Counter = Counter()
+    trigram_counts: Counter = Counter()
+    doc_appearances: Dict[str, Set[str]] = defaultdict(set)
+    total_unigram_tokens = 0
+
+    for source_id, doc_text in documents:
+        raw_words = [w.lower() for w in re.findall(r"\b[a-zA-Z0-9_\'-]{2,}\b", doc_text)]
+        seen_in_doc: Set[str] = set()
+
+        # Track unigram counts for all valid tokens
+        for w in raw_words:
+            unigram_counts[w] += 1
+            total_unigram_tokens += 1
+
+        # Bigrams
+        for i in range(len(raw_words) - 1):
+            w1, w2 = raw_words[i], raw_words[i + 1]
+            if w1 not in stopwords and w2 not in stopwords:
+                phrase = f"{w1} {w2}"
+                bigram_counts[phrase] += 1
+                seen_in_doc.add(phrase)
+
+        # Trigrams
+        for i in range(len(raw_words) - 2):
+            w1, w2, w3 = raw_words[i], raw_words[i + 1], raw_words[i + 2]
+            if w1 not in stopwords and w3 not in stopwords:
+                phrase = f"{w1} {w2} {w3}"
+                trigram_counts[phrase] += 1
+                seen_in_doc.add(phrase)
+
+        for phrase in seen_in_doc:
+            doc_appearances[phrase].add(source_id)
+
+    total_bigrams = sum(bigram_counts.values()) or 1
+    total_trigrams = sum(trigram_counts.values()) or 1
+    total_words = total_unigram_tokens or 1
+
+    # Filter candidate pools by min_freq
+    valid_trigrams = {p: c for p, c in trigram_counts.items() if c >= min_freq}
+    valid_bigrams = {p: c for p, c in bigram_counts.items() if c >= min_freq}
+
+    # Map candidate nesting for C-Value computation: bigrams nested in trigrams
+    nested_in_trigrams: Dict[str, List[str]] = defaultdict(list)
+    for tri_phrase in valid_trigrams:
+        tri_words = tri_phrase.split()
+        if len(tri_words) == 3:
+            b1 = f"{tri_words[0]} {tri_words[1]}"
+            b2 = f"{tri_words[1]} {tri_words[2]}"
+            if b1 in valid_bigrams:
+                nested_in_trigrams[b1].append(tri_phrase)
+            if b2 in valid_bigrams:
+                nested_in_trigrams[b2].append(tri_phrase)
+
+    collocations: List[Dict[str, Any]] = []
+
+    # 1. Trigram extraction with multivariate NPMI (normalized by 2 * -ln(p_xyz)) and C-Value
+    log2_3 = math.log2(3.0)
+    for phrase, count in valid_trigrams.items():
+        w1, w2, w3 = phrase.split()
+        p_xyz = count / total_words
+        p_x = max(1e-9, unigram_counts.get(w1, 1) / total_words)
+        p_y = max(1e-9, unigram_counts.get(w2, 1) / total_words)
+        p_z = max(1e-9, unigram_counts.get(w3, 1) / total_words)
+
+        pmi = math.log(max(1e-12, p_xyz / (p_x * p_y * p_z)))
+        neg_ln_pxyz = -math.log(max(1e-12, p_xyz))
+        # Multivariate NPMI for 3-grams has denominator (3 - 1) * (-ln p_xyz)
+        npmi = max(-1.0, min(1.0, pmi / max(1e-9, 2.0 * neg_ln_pxyz)))
+
+        # C-Value for trigrams (not nested in longer candidate phrases)
+        c_val = log2_3 * count
+        doc_count = len(doc_appearances.get(phrase, set()))
+        score = c_val * (1.0 + max(0.0, npmi)) * (1.0 + 0.1 * math.log(1.0 + doc_count))
+
+        collocations.append({
+            "phrase": phrase,
+            "count": count,
+            "doc_count": doc_count,
+            "type": "trigram",
+            "npmi": round(npmi, 4),
+            "c_value": round(c_val, 2),
+            "score": round(score, 2)
+        })
+
+    # 2. Bigram extraction with NPMI and C-Value (with nested phrase discounting)
+    log2_2 = 1.0  # math.log2(2.0) == 1.0
+    for phrase, count in valid_bigrams.items():
+        w1, w2 = phrase.split()
+        p_xy = count / total_words
+        p_x = max(1e-9, unigram_counts.get(w1, 1) / total_words)
+        p_y = max(1e-9, unigram_counts.get(w2, 1) / total_words)
+
+        pmi = math.log(max(1e-12, p_xy / (p_x * p_y)))
+        neg_ln_pxy = -math.log(max(1e-12, p_xy))
+        npmi = max(-1.0, min(1.0, pmi / max(1e-9, neg_ln_pxy)))
+
+        longer_phrases = nested_in_trigrams.get(phrase, [])
+        if longer_phrases:
+            avg_longer_count = sum(valid_trigrams[lp] for lp in longer_phrases) / len(longer_phrases)
+            c_val = log2_2 * max(0.0, count - avg_longer_count)
+        else:
+            c_val = log2_2 * count
+
+        doc_count = len(doc_appearances.get(phrase, set()))
+        score = c_val * (1.0 + max(0.0, npmi)) * (1.0 + 0.1 * math.log(1.0 + doc_count))
+
+        collocations.append({
+            "phrase": phrase,
+            "count": count,
+            "doc_count": doc_count,
+            "type": "bigram",
+            "npmi": round(npmi, 4),
+            "c_value": round(c_val, 2),
+            "score": round(score, 2)
+        })
+
+    # Keep legitimate terminology, isolating coincidental co-occurrences
+    stat_filtered = [c for c in collocations if c["npmi"] > -0.2 and c["c_value"] > 0]
+    final_pool = stat_filtered if stat_filtered else collocations
+
+    final_pool.sort(key=lambda x: (-x.get("score", 0.0), -x.get("c_value", 0.0), -x["count"], -x["doc_count"]))
+    return final_pool[:top_n]
+
+
 def scan_words(
     corpus_path: Optional[Path] = None,
     output_csv_path: Optional[Path] = None,
@@ -426,6 +571,15 @@ def scan_words(
         f"Exported {len(csv_rows)} records ({len(global_counts)} unique words) to '{target_output_csv}'."
     )
 
+    # 5b. Extract multi-word collocations & persist outputs/collocations.json
+    collocations = extract_collocations(documents, combined_stopwords, min_freq=2, top_n=60)
+    colloc_path = target_output_csv.parent / "collocations.json"
+    try:
+        atomic_write_json(colloc_path, collocations)
+        logger.info(f"Saved {len(collocations)} multi-word collocations to '{colloc_path}'.")
+    except Exception as ce:
+        logger.warning(f"Could not save collocations.json: {ce}")
+
     # 6. Sanity check: Print top N words by raw count to console
     top_words = global_counts.most_common(top_sanity_check)
 
@@ -448,6 +602,7 @@ def scan_words(
     print(f" Total Documents:  {len(documents)}")
     print(f" Total Tokens:     {total_token_occurrences:,}")
     print(f" Unique Words:     {len(global_counts):,}")
+    print(f" Collocations:     {len(collocations):,} phrasal concepts")
     print(f" Stemming:         {'Enabled' if stem else 'Disabled'}")
     print(f" Output Written:   {target_output_csv}")
     print("=" * 64 + "\n")
@@ -456,6 +611,7 @@ def scan_words(
         "documents_count": len(documents),
         "total_tokens": total_token_occurrences,
         "unique_words": len(global_counts),
+        "collocations": collocations,
         "top_words": top_words,
         "output_file": str(target_output_csv),
     }
